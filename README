@@ -1,0 +1,29 @@
+ minCrypt application README
+ ===========================
+
+This application is the implementation of minCrypt algorithm as based
+on the minCrypt design document written to provide simple algorithm
+implementation on the minimum number of source files.
+
+The algorithm has been implemented in C language with requirements
+for math libvirt (libm) and it's distributed under the GPL licence.
+
+Terminology
+-----------
+
+This app should be referred to as minCrypt.
+
+Pre-requisite software
+----------------------
+
+Where versions are noted below these are the versions tested to definitely
+work. For some of them you may be able to run with earlier releases, so
+please report any success to the mailing lists
+
+ libm
+
+Copyright /  License
+--------------------
+
+All the application code is covered under the GPL licence.
+

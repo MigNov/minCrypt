@@ -1,0 +1,13 @@
+ minCrypt authors
+ ================
+
+minCrypt is based on design document draft 0.0.1 that's available in docs
+subdirectory of this git repository.
+
+The algorithm was both written and implemented by:
+
+	Michal Novotny <mignov@gmail.com>
+
+If you want to contribute to the algorithm feel free to post patches to
+the address/maintainer address written above and you'll be listed as one
+of the authors as well.
