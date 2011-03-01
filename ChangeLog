@@ -1,11 +1,15 @@
  minCrypt ChangeLog
  ==================
 
+Tue 01 Mar 2011 Michal Novotny <mignov@gmail.com>
+* New functionality to encode as base64 added
+* New PHP module to use mincrypt added
+
 Wed 26 Jan 2011 Michal Novotny <mignov@gmail.com>
- - Git repository created and project is being hosted on github
+* Git repository created and project is being hosted on github
 
 Fri 17 Dec 2010 Michal Novotny <mignov@gmail.com>
- - MinCrypt implemented as based on design document
+* MinCrypt implemented as based on design document
 
 Thu 09 Dec 2010 Michal Novotny <mignov@gmail.com>
- - Design document draft 0.0.1 document created (available in docs dir)
+* Design document draft 0.0.1 document created (available in docs dir)

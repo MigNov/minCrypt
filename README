@@ -21,6 +21,7 @@ work. For some of them you may be able to run with earlier releases, so
 please report any success to the mailing lists
 
  libm
+ php-devel (to create PHP extension)
 
 Copyright /  License
 --------------------
