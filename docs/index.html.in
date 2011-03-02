@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>MinCrypt</h1>
+
+    <p>MinCrypt was designed as the minimalistic encryption system to be used within the devices and on the PHP-driven websites. For this purpose there
+       was also a PHP extension written to implement the PHP bindings for the core functionality.</p>
+
+    <h2>Why is it called MinCrypt?</h2>
+    <p>MinCrypt is the ambiguous project name. Since MinCrypt was written by Michal Novotny in early 2011 the letters <i>Min</i>, or better written as
+       <i>MiN</i>, could mean author initials (<i>Mi</i>chal <i>N</i>ovotny) however the original meaning of the <i>Min</i> letters was to denote the
+      algorithm to be minimalistic and therefore MinCrypt could mean both encryption algorithm by Michal Novotny and minimalistic encryption algorithm.
+    </p>
+
+    <h2>What is MinCrypt?</h2>
+    <p>As already written above MinCrypt is the minimalistic encryption algorithm implementing several core functions. The encryption itself is
+       symmetric and it's based on the initialization vectors generated from salt and password values and optionally the <i>vector multiplier</i>
+       value.</p>
+    <p>Initialization vectors are key parts of the encryption system core since once they are generated all the encrypted and decrypted information
+       depends on them and therefore providing the same password and salt values is necessary in order to decrypt the file or data block successfully.
+       The <i>vector multiplier</i> value is useful only for case of bigger data blocks since it's the multiplicator value to expand the initialization
+       vectors table by. Based on <i>vector multiplier</i>'s design once the input data block is smaller than data block to be processed the value of
+       this variable will be having no effect.</p>
+
+    <h2>Using MinCrypt</h2>
+    <p>Once you have the mincrypt installed you can call the binary by running <b>mincrypt</b> from the shell window. You should be also having PHP
+       module installed and loaded in your PHP configuration so you can test it's presence using a standard PHPInfo() output where you could be able
+       to see mincrypt extension information if enabled or you can try to see the <i>mincrypt</i> string in the <b>php -m</b> output (provided the
+       fact you're having access to CGI/CLI-based version of PHP), e.g. using:</p>
+    <pre>$ php -m | grep mincrypt &gt; /dev/null; echo $?</pre>
+    <p>The second part after the semicolon is the next command to be processed and this will redirect the grepped <i>php -m</i> to null device so it
+       will not show the command output. Instead, it will show the error code of the <i>grep</i> command which will be 0 for case the extension is
+       installed properly or number 1 if the extension was not found in your PHP configuration.</p>
+
+    <p>If you experience issues that your PHP or Apache dies and your script is running the mincrypt system please check your configuration</p>
+
+    <h2>Resources</h2>
+    <p>
+      MinCrypt algorithm has been described by it's author in 2010/2011 in the <a href="mincrypt-design-document.pdf">MinCrypt design document (PDF format)</a>.
+    </p>
+  </body>
+</html>

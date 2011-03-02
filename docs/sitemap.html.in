@@ -1,0 +1,62 @@
+<html>
+  <body>
+    <h1>Sitemap</h1>
+
+    <div id="sitemap">
+    <ul>
+      <li>
+        <a href="index.html">Home</a>
+        <span>Front page of the mincrypt website</span>
+      </li>
+      <li>
+        <a href="news.html">News</a>
+        <span>Details of new features and bugs fixed in each release</span>
+        <ul>
+          <li>
+            <a href="https://github.com/MigNov/minCrypt">Git log</a>
+            <span>Latest commit messages from the source repository </span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="downloads.html">Downloads</a>
+        <span>Get the latest source releases, binary builds and get access to the source repository</span>
+      </li>
+      <li>
+        <a href="windows.html">Windows port</a>
+        <span>Information on mincrypt Windows port</span>
+      </li>
+      <li>
+         <a href="contributions.html">Contributions</a>
+         <span>Information on contributing to mincrypt</span>
+      </li>
+      <li>
+        <a href="docs.html">Documentation</a>
+        <span>Information for users, administrators and developers</span>
+        <ul>
+          <li>
+            <a href="compiling.html">Compiling</a>
+            <span>How to compile mincrypt</span>
+          </li>
+          <li>
+            <a href="deployment.html">Deployment</a>
+            <span>Information about deploying and using mincrypt</span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="contact.html">Contact</a>
+        <span>How to contact the developers via email</span>
+      </li>
+      <li>
+        <a href="roadmap.html">Roadmap</a>
+        <span>List of features to be implemented</span>
+      </li>
+      <li>
+        <a href="sitemap.html">Sitemap</a>
+        <span>MinCrypt site map</span>
+      </li>
+    </ul>
+    </div>
+  </body>
+</html>

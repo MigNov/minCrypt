@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Downloads</h1>
+
+    <h2>Official Releases</h2>
+
+    <p>
+      There are no official releases available yet.
+    </p>
+
+    <h2>GIT source repository</h2>
+
+    <p>
+      You can clone the development version of mincrypt from GIT repository:
+    </p>
+    <pre>git clone git://github.com/MigNov/minCrypt.git</pre>
+
+     <p>If you want to contribute to the mincrypt project please refer to <a href="contributions.html">Contributions</a>.</p>
+  </body>
+</html>

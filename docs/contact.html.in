@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Contacting the development team</h1>
+
+    <p>
+      Since the MinCrypt project is developer and maintained by it's original author only, Michal Novotny, and it's
+      presented on the github the best way to contact him is to write him a private e-mail to
+      <a href="mailto:mignov@gmail.com">mignov@gmail.com</a> and prepend the <i>mincrypt</i> string to the e-mail
+      subject.
+    </p>
+    <p>
+      You can also use this e-mail to send patches for the project as mentioned on the <a href="contributions.html">Contributions</a> page.
+    </p>
+
+  </body>
+</html>

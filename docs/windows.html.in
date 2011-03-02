@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Windows port</h1>
+
+    <p>
+      There is no official Windows port of mincrypt available yet but if you want to write the Windows port
+      we would appreciate it. We would prefer to use mingw32 cross-compile from Linux systems to compile the application
+      for Windows however if you want to do your development on your Windows box using some other tools that is using
+      MingW32 (e.g. Dev C++) feel free to use it as long as it's free.</p>
+
+    <h2>Reference materials on writing Windows libraries/applications under Linux</h2>
+    <p>
+      If you seek for some reference information about Windows application/libraries programming under the Linux operating system please refer to
+      author's programming guide at <a href="http://migsoft.net/linux-winprog.html">Windows programming under Linux programming guide</a>.
+    </p>
+
+  </body>
+</html>

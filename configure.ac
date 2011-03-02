@@ -1,10 +1,50 @@
 AC_INIT([mincrypt], [0.0.1], [mignov@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([-Wno-portability])
+#AM_MAINTAINER_MODE([enable])
+
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([You need libm to compile this utility]))
 AC_CHECK_TOOL([MKDIR], [mkdir])
 
+dnl Specific XML catalog file for validation of generated html
+AC_ARG_WITH([xml-catalog-file],
+            [AC_HELP_STRING([--with-xml-catalog-file=path],
+                [path to XML catalog file for validating
+                 generated html, default /etc/xml/catalog])],
+            [XML_CATALOG_FILE=$withval],
+            [XML_CATALOG_FILE='/etc/xml/catalog'])
+AC_SUBST([XML_CATALOG_FILE])
+
+# External programs to generate documentation
+AC_PATH_PROG([XSLTPROC], [xsltproc], [no])
+if test "x$XSLTPROC" = "xno"; then
+    AC_MSG_ERROR([xsltproc not found])
+fi
+
+AC_PATH_PROG([XMLLINT], [xmllint], [no])
+if test "x$XMLLINT" = "xno"; then
+    AC_MSG_ERROR([xmllint not found])
+fi
+
+AC_PATH_PROG([XMLCATALOG], [xmlcatalog], [no])
+if test "x$XMLCATALOG" = "xno"; then
+    AC_MSG_ERROR([xmlcatalog not found])
+fi
+
+
+dnl Specific dir for HTML output ?
+AC_ARG_WITH([html-dir], [AC_HELP_STRING([--with-html-dir=path],
+            [path to base html directory, default $datadir/doc/html])],
+            [HTML_DIR=$withval], [HTML_DIR='$(datadir)/doc'])
+
+AC_ARG_WITH([html-subdir], [AC_HELP_STRING([--with-html-subdir=path],
+            [directory used under html-dir, default $PACKAGE-$VERSION/html])],
+            [test "x$withval" != "x" && HTML_DIR="$HTML_DIR/$withval"],
+            [HTML_DIR="$HTML_DIR/\$(PACKAGE)-\$(VERSION)/html"])
+AC_SUBST([HTML_DIR])
+
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile php/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile docs/Makefile src/Makefile php/Makefile tests/Makefile])
 AC_OUTPUT

@@ -1,6 +1,6 @@
 SOURCEDIR=`rpm --eval '%{_sourcedir}'`
 
-SUBDIRS = src php tests
+SUBDIRS = src php tests docs
 
 rpm:   dist-xz
 	cp $(PACKAGE_NAME).tar.xz $(SOURCEDIR)/$(PACKAGE_NAME).tar.xz

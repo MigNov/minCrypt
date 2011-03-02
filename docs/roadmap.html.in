@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<html>
+  <body>
+    <h1>Roadmap for mincrypt</h1>
+
+    <p>
+     This is the intended roadmap of mincrypt project for the worth implementing features and/or bug fixes:
+    </p>
+
+    <ul>
+      <li>Write a Windows port of mincrypt binary and later module</li>
+      <li>Improve the mincrypt project to be more secure</li>
+    </ul>
+
+  </body>
+</html>
