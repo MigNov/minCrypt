@@ -1,4 +1,7 @@
-/*  Copyright (c) 2006-2007, Philip Busch <broesel@studcs.uni-sb.de>
+/*
+ *  base64.c: Base64 encoding and decoding functions
+ *
+ *  Copyright (c) 2006-2007, Philip Busch <broesel@studcs.uni-sb.de>
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -29,7 +32,7 @@
  * @ingroup base64
  */
 
-#//define DEBUG_BASE64
+//define DEBUG_BASE64
 
 #ifdef DEBUG_BASE64
 #define DPRINTF(fmt, ...) \

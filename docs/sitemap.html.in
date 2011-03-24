@@ -35,6 +35,22 @@
         <span>Information for users, administrators and developers</span>
         <ul>
           <li>
+            <a href="api-reference.html">C API reference</a>
+            <span>C API reference guide</span>
+          </li>
+          <li>
+            <a href="dev-api-reference.html">C Developer's API reference</a>
+            <span>C Library developer's API reference guide</span>
+          </li>
+          <li>
+            <a href="php-api-reference.html">PHP API reference</a>
+            <span>PHP extension API reference guide</span>
+          </li>
+          <li>
+            <a href="dev-papi-reference.html">PHP Developer's API reference</a>
+            <span>PHP Library developer's API reference guide</span>
+          </li>
+          <li>
             <a href="compiling.html">Compiling</a>
             <span>How to compile mincrypt</span>
           </li>

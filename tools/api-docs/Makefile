@@ -1,10 +1,10 @@
-BINARY=relevance
-SOURCES=relevance.c
+BINARY=generate-api-docs
+SOURCES=generate-api-docs.c
 LIBS=
 
-all: clean bin
+all: clean compile
 
 clean:
 	rm -f $(BINARY)
-bin:
+compile:
 	$(CC) -Wall -Werror -o $(BINARY) $(SOURCES) $(LIBS)

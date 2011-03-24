@@ -7,6 +7,7 @@
 #include <gdfontmb.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifdef DEBUG_RNDTEST
 #define DPRINTF(fmt, ...) \
@@ -81,11 +82,11 @@ int generateGraphFromValues(char *filename, unsigned char *freq, int num, int sh
 	red = gdImageColorAllocate(im, 255, 0, 0);
 	if (showLegend) {
 		for (i = 0; i < 100; i += 10) {
-			char s[16];
+			unsigned char s[16];
 			len = 255 * ((float)(100 - i) / 100);
 			gdImageLine(im, 0, len, imageX, len, red);
 			gdImageLine(im, startX - 2, 0, startX - 2, 255, red);
-			snprintf(s, 16, "%2d%%", i);
+			snprintf((char *)s, 16, "%2d%%", i);
 			gdImageString(im, gdFontMediumBold, 5, len - 12, s, red);
 		}
 	}
@@ -113,10 +114,10 @@ int generateGraphFromValues(char *filename, unsigned char *freq, int num, int sh
 			col = gdImageColorAllocate(im, 255 - i, 255 - i, i);
 
 		if ((i % 10 == 0) && (showLegend)) {
-			char s[16];
+			unsigned char s[16];
 
 			gdImageLine(im, ni + ii, 0, ni + ii, 255, red);
-			snprintf(s, 16, "%2d", i);
+			snprintf( (char *)s, 16, "%2d", i);
 			gdImageString(im, gdFontMediumBold, ni + ii + 1, 240, s, gdImageColorAllocate(im, 255, 255, 255));
 			ni++;
 		}

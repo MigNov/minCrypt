@@ -1,3 +1,13 @@
+/*
+ *  mincrypt.c: Minimalistic encryption system core
+ *
+ *  Copyright (c) 2006-2007, Michal Novotny <minovotn@redhat.com>
+ *  All rights reserved.
+ *
+ *  See COPYING for the license of this software
+ *
+ */
+
 //#define DEBUG_MINCRYPT
 
 #include "mincrypt.h"
@@ -15,6 +25,14 @@ uint64_t _ival = 0;
 int _vector_size = 0;
 int out_type = OUTPUT_TYPE_BINARY;
 
+/*
+	Private function name:	get_nearest_power_of_two
+	Since version:			0.0.1
+	Description:			This private function is used to get the nearest higher power of two to the value, it's also returning number of bits used for the number returned in oBits variable
+	Arguments:				@value [int]: value to which find the nearest power of two
+							@oBits [int]: number of bits used by the return value as it's power of two
+	Returns:				nearest higher power of two to value
+*/
 int get_nearest_power_of_two(int value, int *oBits)
 {
 	int bits = 0, val = 1;
@@ -33,6 +51,13 @@ int get_nearest_power_of_two(int value, int *oBits)
 	return val;
 }
 
+/*
+	Function name:			crypt_set_output_type
+	Since version:			0.0.1
+	Description:			This function is used to set type of output encoding
+	Arguments:				@type [int]: type number, can be either OUTPUT_TYPE_BINARY (i.e. no encoding) or OUTPUT_TYPE_BASE64 to use base64 encoding
+	Returns:				0 for no error, otherwise error code
+*/
 int crypt_set_output_type(int type)
 {
 	if ((type < OUTPUT_TYPE_BASE) || (type > OUTPUT_TYPE_BASE64))
@@ -42,6 +67,15 @@ int crypt_set_output_type(int type)
 	return 0;
 }
 
+/*
+	Function name:			crypt_set_password
+	Since version:			0.0.1
+	Description:			This function is used to calculate initialization vectors (IV) from the password and salt values
+	Arguments:				@salt [string]: salt value to be used for the IV generation
+							@password [string]: password to be used for IV generation
+							@vector_multiplier [int]: value to extend the vector by multiplicating it's size
+	Returns:				None
+*/
 void crypt_set_password(char *salt, char *password, int vector_multiplier)
 {
 	uint32_t shift = 0, val = 0, iSalt = 0, initial = 0;
@@ -96,6 +130,13 @@ void crypt_set_password(char *salt, char *password, int vector_multiplier)
 	DPRINTF("%s: initialValue = 0x%"PRIx64"\n", __FUNCTION__, _ival);
 }
 
+/*
+	Function name:			crypt_cleanup
+	Since version:			0.0.1
+	Description:			This function is used to cleanup all the memory allocated by crypt_set_password() function
+	Arguments:				None
+	Returns:				None
+*/
 void crypt_cleanup()
 {
 	_ival = 0;
@@ -103,6 +144,16 @@ void crypt_cleanup()
 	free(_iv);
 }
 
+/*
+	Private function name:	crypt_process
+	Since version:			0.0.1
+	Description:			This function is used to process the encryption and decryption of the data block
+	Arguments:				@block [buffer]: buffer of data to be encrypted/decrypted
+							@size [int]: size of buffer
+							@crc [uint32_t]: CRC value for the data block (used as a part of algorithm)
+							@id [int]: identifier of the chunk to be encoded (used as a part of algorithm)
+	Returns:				output buffer of identical length as original
+*/
 static unsigned char *crypt_process(unsigned char *block, int size, uint32_t crc, int id)
 {
 	int i;
@@ -132,7 +183,17 @@ static unsigned char *crypt_process(unsigned char *block, int size, uint32_t crc
 	return out;
 }
 
-unsigned char *crypt_encrypt(unsigned char *block, int size, int id, int *new_size)
+/*
+	Function name:			crypt_encrypt
+	Since version:			0.0.1
+	Description:			Main function for the data encryption. Takes the block, size and id as input arguments with returning new size
+	Arguments:				@block [buffer]: buffer of data to be encrypted/decrypted
+							@size [int]: size of buffer
+							@id [int]: identifier of the chunk to be encoded
+							@new_size [size_t]: output integer value for the output buffer size
+	Returns:				output buffer of new_size bytes
+*/
+unsigned char *crypt_encrypt(unsigned char *block, int size, int id, size_t *new_size)
 {
 	int i;
 	uint32_t crc = 0;
@@ -220,7 +281,18 @@ unsigned char *crypt_encrypt(unsigned char *block, int size, int id, int *new_si
 	return out;
 }
 
-unsigned char *crypt_decrypt(unsigned char *block, int size, int id, int *new_size, int *read_size)
+/*
+	Function name:			crypt_decrypt
+	Since version:			0.0.1
+	Description:			Main function for the data decryption. Takes the block, size and id as input arguments with returning both decrypted encoded and decrypted decoded (raw) size
+	Arguments:				@block [buffer]: buffer of data to be encrypted/decrypted
+							@size [int]: size of buffer
+							@id [int]: identifier of the chunk to be encoded
+							@new_size [size_t]: output integer value for the output buffer size
+							@read_size [int]: output integer value for the decoded output buffer size (different from new_size in case of base64 encoding)
+	Returns:				output buffer of read_size bytes
+*/
+unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new_size, int *read_size)
 {
 	unsigned char data[4] = { 0 }, *out = NULL;
 	uint32_t old_crc = 0, new_crc = 0;
@@ -311,6 +383,17 @@ unsigned char *crypt_decrypt(unsigned char *block, int size, int id, int *new_si
 	return out;
 }
 
+/*
+	Function name:			crypt_encrypt_file
+	Since version:			0.0.1
+	Description:			Function for the entire file encryption. Takes the input and output files, salt, password and vector_multiplier value
+	Arguments:				@filename1 [string]: input (original) file
+							@filename2 [string]: output (encrypted) file
+							@salt [string]: salt value to be used, may be NULL to use already set IVs if applicable, used only with conjuction password
+							@password [string]: password value to be used, may be NULL to use already set IVs if applicable, used only with conjuction salt
+							@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
+	Returns:				0 for no error, otherwise error code
+*/
 int crypt_encrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
 {
 	unsigned char buf[BUFFER_SIZE] = { 0 };
@@ -348,6 +431,17 @@ int crypt_encrypt_file(char *filename1, char *filename2, char *salt, char *passw
 	return ret;
 }
 
+/*
+	Function name:			crypt_decrypt_file
+	Since version:			0.0.1
+	Description:			Function for the entire file decryption. Takes the input and output files, salt, password and vector_multiplier value
+	Arguments:				@filename1 [string]: input (encrypted) file
+							@filename2 [string]: output (decrypted) file
+							@salt [string]: salt value to be used, may be NULL to use already set IVs if applicable, used only with conjuction password
+							@password [string]: password value to be used, may be NULL to use already set IVs if applicable, used only with conjuction salt
+							@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
+	Returns:				0 for no error, otherwise error code
+*/
 int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
 {
 	unsigned char buf[BUFFER_SIZE_BASE64+13] = { 0 };

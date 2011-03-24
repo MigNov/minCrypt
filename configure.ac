@@ -46,5 +46,5 @@ AC_ARG_WITH([html-subdir], [AC_HELP_STRING([--with-html-subdir=path],
 AC_SUBST([HTML_DIR])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile docs/Makefile src/Makefile php/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile docs/Makefile src/Makefile php/Makefile tests/Makefile tools/Makefile])
 AC_OUTPUT
