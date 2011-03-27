@@ -1,3 +1,4 @@
+ACLOCAL_AMFLAGS=-I m4
 SOURCEDIR=`rpm --eval '%{_sourcedir}'`
 
 SUBDIRS = src php tests tools docs

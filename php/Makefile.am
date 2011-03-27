@@ -3,7 +3,6 @@ CC=cc
 CP=cp
 RM=rm
 ECHO=echo
-LIBDEFS=-DNO_MAIN
 PHPINC=`php-config --includes`
 PHPEDIR=`php-config --extension-dir`
 PHPCDIR=`php-config --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p'`
@@ -15,7 +14,7 @@ all: build clean-temp
 
 build:
 	$(CC) -Wall -fpic -DCOMPILE_DL_MINCRYPT=1 $(PHPINC) -c -o $(NAME).o mincrypt-php.c
-	$(CC) -Wall -shared $(LIBS) -rdynamic -o $(NAME).so $(NAME).o $(MINCRYPT_OBJECTS) $(LIBDEFS)
+	$(CC) -Wall -shared $(LIBS) -rdynamic -o $(NAME).so $(NAME).o $(MINCRYPT_OBJECTS)
 	$(ECHO) "Extension compiled as $(NAME).so"
 
 install-exec-local:
