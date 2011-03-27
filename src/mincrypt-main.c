@@ -1,7 +1,7 @@
 /*
  *  mincrypt-main.c: Minimalistic encryption system application
  *
- *  Copyright (c) 2006-2007, Michal Novotny <minovotn@redhat.com>
+ *  Copyright (c) 2010-2011, Michal Novotny <mignov@gmail.com>
  *  All rights reserved.
  *
  *  See COPYING for the license of this software

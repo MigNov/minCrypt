@@ -1,3 +1,13 @@
+/*
+ *  php_mincrypt.h: PHP bindings header file
+ *
+ *  Copyright (c) 2010-2011, Michal Novotny <mignov@gmail.com>
+ *  All rights reserved.
+ *
+ *  See COPYING for the license of this software
+ *
+ */
+
 #ifndef PHP_MINCRYPT_H
 #define PHP_MINCRYPT_H 1
 

@@ -1,3 +1,13 @@
+/*
+ *  mincrypt-php.c: PHP bindings for Minimalistic encryption system (minCrypt)
+ *
+ *  Copyright (c) 2010-2011, Michal Novotny <mignov@gmail.com>
+ *  All rights reserved.
+ *
+ *  See COPYING for the license of this software
+ *
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
