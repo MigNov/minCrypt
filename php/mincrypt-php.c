@@ -297,14 +297,19 @@ PHP_FUNCTION(mincrypt_decrypt)
 	tmp = (char *)base64_decode( (const char *)block, &rc );
 
 	block_out = emalloc( (block_size + 16) * sizeof(unsigned char) );
-	block_out = (unsigned char *)crypt_decrypt((unsigned char *)tmp, rc - 1, next_id(0), &rc, NULL);
+	if (block_out == NULL) {
+		efree(block_out);
+		set_error("Cannot allocate decryption buffer");
+		RETURN_FALSE;
+	}
 
-	if (rc < 0) {
+	block_out = (unsigned char *)crypt_decrypt((unsigned char *)tmp, rc - 1, next_id(0), &rc, NULL);
+	if ((block_out == NULL) || (rc < 0)) {
 		efree(block_out);
 		set_error("Decryption failed!");
 		RETURN_FALSE;
 	}
-	
+
 	block_out[rc] = 0;
 	
 	MINCRYPT_G (last_size) = rc;

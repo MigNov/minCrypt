@@ -24,6 +24,7 @@ uint32_t *_iv = NULL;
 uint64_t _ival = 0;
 int _vector_size = 0;
 int out_type = OUTPUT_TYPE_BINARY;
+int simple_mode = 0;
 
 /*
 	Private function name:	get_nearest_power_of_two
@@ -56,14 +57,33 @@ int get_nearest_power_of_two(int value, int *oBits)
 	Since version:			0.0.1
 	Description:			This function is used to set type of output encoding
 	Arguments:				@type [int]: type number, can be either OUTPUT_TYPE_BINARY (i.e. no encoding) or OUTPUT_TYPE_BASE64 to use base64 encoding
-	Returns:				0 for no error, otherwise error code
+	Returns:				0 for no error, otherwise error code (1 for unsupported encoding and 2 for enabling simple mode for non-binary encoding)
 */
 int crypt_set_output_type(int type)
 {
 	if ((type < OUTPUT_TYPE_BASE) || (type > OUTPUT_TYPE_BASE64))
 		return 1;
 
+	if (simple_mode && (type != OUTPUT_TYPE_BINARY))
+		return 2;
+
 	out_type = type;
+	return 0;
+}
+
+/*
+	Function name:			crypt_set_simple_mode
+	Since version:			0.0.1
+	Description:			This function is used to enable or disable simple mode on the decryption phase. Simple mode is the mode where CRC-32 checking and read size checking are disabled. Other encoding than binary encoding cannot work in this mode.
+	Arguments:			@enable [int]:	enable (1) or disable (0) simple mode checking code for decryption phase
+	Returns:			0 on success, 1 on error (trying to set simple mode on non-binary encoding)
+*/
+int crypt_set_simple_mode(int enable)
+{
+	if ((out_type != OUTPUT_TYPE_BINARY) && (enable != 0))
+		return 1;
+
+	simple_mode = enable;
 	return 0;
 }
 
@@ -331,12 +351,14 @@ unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new
 	enc_size = GETUINT32(data);
 	DPRINTF("%s: Encoded chunk size is %d bytes\n", __FUNCTION__, size);
 
-	data[0] = block[9];
-	data[1] = block[10];
-	data[2] = block[11];
-	data[3] = block[12];
-	old_crc = GETUINT32(data);
-	DPRINTF("%s: Original CRC-32 value is 0x%"PRIx32"\n", __FUNCTION__, old_crc);
+	if (!simple_mode) {
+		data[0] = block[9];
+		data[1] = block[10];
+		data[2] = block[11];
+		data[3] = block[12];
+		old_crc = GETUINT32(data);
+		DPRINTF("%s: Original CRC-32 value is 0x%"PRIx32"\n", __FUNCTION__, old_crc);
+	}
 
 	if (out_type == OUTPUT_TYPE_BINARY) {
 		out = crypt_process(block+13, orig_size, old_crc, id);
@@ -359,19 +381,21 @@ unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new
 		csize = orig_size;
 	}
 
-	DPRINTF("%s: Got chunk size of %d bytes\n", __FUNCTION__, csize);
+	if (!simple_mode) {
+		DPRINTF("%s: Got chunk size of %d bytes\n", __FUNCTION__, csize);
 
-	new_crc = crc32_block(out, orig_size, 0xFFFFFFFF);
-	DPRINTF("%s: Checking CRC value for %d byte-block (0x%08"PRIx32" [expected] %c= 0x%08"PRIx32" [found])\n",
-			__FUNCTION__, orig_size, old_crc, old_crc == new_crc ? '=' : '!', new_crc);
+		new_crc = crc32_block(out, orig_size, 0xFFFFFFFF);
+		DPRINTF("%s: Checking CRC value for %d byte-block (0x%08"PRIx32" [expected] %c= 0x%08"PRIx32" [found])\n",
+				__FUNCTION__, orig_size, old_crc, old_crc == new_crc ? '=' : '!', new_crc);
 
-	if (old_crc != new_crc) {
-		free(out);
-		if (new_size != NULL)
-			*new_size = -1;
+		if (old_crc != new_crc) {
+			free(out);
+			if (new_size != NULL)
+				*new_size = -1;
 
-		DPRINTF("%s: CRC value doesn't match!\n", __FUNCTION__);
-		return NULL;
+			DPRINTF("%s: CRC value doesn't match!\n", __FUNCTION__);
+			return NULL;
+		}
 	}
 
 	if (new_size != NULL)
@@ -447,7 +471,7 @@ int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *passw
 	unsigned char buf[BUFFER_SIZE_BASE64+13] = { 0 };
 	char *outbuf;
 	int fd, fdOut, rc, rsize, id, ret = 0;
-	uint64_t already_read = 0;
+	uint64_t already_read = 0, total_read = 0;
 
 	if ((salt != NULL) && (password != NULL))
 		crypt_set_password(salt, password, vector_multiplier);
@@ -466,10 +490,14 @@ int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *passw
 
 	id = 1;
 	while ((rc = read(fd, buf, sizeof(buf))) > 0) {
+		total_read += rc;
 		outbuf = crypt_decrypt(buf, rc, id++, &rc, &rsize);
 		already_read += rsize + 13;
-		if (lseek(fd, already_read, SEEK_SET) != already_read)
-			DPRINTF("Warning: Seek error!\n");
+		if ((total_read != already_read) && (!simple_mode)) {
+			if (lseek(fd, already_read, SEEK_SET) != already_read)
+				DPRINTF("Warning: Seek error!\n");
+		}
+
 		if (rc == -1) {
 			DPRINTF("An error occured while decrypting input. Please check your password.\n");
 			free(outbuf);
@@ -479,6 +507,7 @@ int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *passw
 			unlink(filename2);
 			break;
 		}
+
 		write(fdOut, outbuf, rc);
 		free(outbuf);
 	}
