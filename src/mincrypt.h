@@ -22,6 +22,11 @@
 #define OUTPUT_TYPE_BINARY		OUTPUT_TYPE_BASE
 #define OUTPUT_TYPE_BASE64		OUTPUT_TYPE_BASE + 1
 
+#ifdef WINDOWS
+#undef O_LARGEFILE
+#define O_LARGEFILE			0
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -31,7 +36,6 @@
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>
-#include <lzma.h>
 #include <sys/stat.h>
 #include <getopt.h>
 #include <stdlib.h>

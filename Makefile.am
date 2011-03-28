@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS=-I m4
 SOURCEDIR=`rpm --eval '%{_sourcedir}'`
 
-SUBDIRS = src php tests tools docs
+SUBDIRS = src php tests tools windows docs
 
 rpm:   dist-xz
 	cp $(PACKAGE_NAME).tar.xz $(SOURCEDIR)/$(PACKAGE_NAME).tar.xz
