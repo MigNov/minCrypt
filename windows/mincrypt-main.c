@@ -8,8 +8,6 @@
  *
  */
 
-#define WINDOWS
-
 //#define DEBUG_MINCRYPT
 
 #include "../src/mincrypt.h"
@@ -91,8 +89,8 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	
 	if (parseArgs(argc, argv)) {
-		printf("Syntax: %s --input-file=infile --output-file=outfile [--decrypt] [--password=pwd] [--salt=salt] "
-			"[--vector-multiplier=number] [--type=base64|binary] [--simple-mode]\n",
+		printf("Syntax: %s --input-file=infile --output-file=outfile --password=password --salt=salt "
+			"[--vector-multiplier=number] [--decrypt] [--type=base64|binary] [--simple-mode]\n",
 				argv[0]);
 		return 1;
 	}
@@ -106,11 +104,16 @@ int main(int argc, char *argv[])
 			printf("Warning: Cannot set simple mode for non-binary encoding\n");
 
 	if (!decrypt)
-	    ret = crypt_encrypt_file(infile, outfile, password, salt, vector_mult);
+		ret = crypt_encrypt_file(infile, outfile, password, salt, vector_mult);
 	else
-	    ret = crypt_decrypt_file(infile, outfile, password, salt, vector_mult);
+		ret = crypt_decrypt_file(infile, outfile, password, salt, vector_mult);
 	    
 	crypt_cleanup();
+
+	if (ret != 0)
+		fprintf(stderr, "Action failed with error code: %d\n", ret);
+	else
+		printf("Action has been completed successfully\n");
 	
 	return ret;
 }

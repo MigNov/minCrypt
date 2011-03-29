@@ -4,10 +4,14 @@
     <h1>Windows port</h1>
 
     <p>
-      There is no official Windows port of mincrypt available yet but if you want to write the Windows port
-      we would appreciate it. We would prefer to use mingw32 cross-compile from Linux systems to compile the application
-      for Windows however if you want to do your development on your Windows box using some other tools that is using
-      MingW32 (e.g. Dev C++) feel free to use it as long as it's free.</p>
+      At the end of March 2011 the initial (first) version of Windows port has been introduced in the commits by minCrypt's
+      author however only the console mode application is available, i.e. no GUI support yet for neither Linux nor Windows.
+      <br />
+      The Windows port is written using mingw32-gcc cross-compiler and developer on the Linux box with testing in both Wine
+      emulator and also Windows XP x86 virtual machine. If you would like to contribute to project of porting minCrypt onto
+      Windows platform feel free to use either mingw32-gcc cross-compiler from Linux (preferred way) or MingW32 based tools
+      on the Windows stack, like Dev-C++. Feel free to adopt and use any development tools for the development as long as
+      the tool stack is available for free.</p>
 
     <h2>Reference materials on writing Windows libraries/applications under Linux</h2>
     <p>

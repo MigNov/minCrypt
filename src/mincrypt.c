@@ -12,6 +12,16 @@
 
 #include "mincrypt.h"
 
+#ifdef WINDOWS
+	#ifdef BUILDING_DLL
+		#define DLLEXPORT __declspec(dllexport)
+	#else
+		#define DLLEXPORT __declspec(dllimport)
+	#endif
+#else
+	#define DLLEXPORT	
+#endif
+
 #ifdef DEBUG_MINCRYPT
 #define DPRINTF(fmt, ...) \
 do { fprintf(stderr, "mincrypt: " fmt , ## __VA_ARGS__); } while (0)
@@ -34,7 +44,7 @@ int simple_mode = 0;
 							@oBits [int]: number of bits used by the return value as it's power of two
 	Returns:				nearest higher power of two to value
 */
-int get_nearest_power_of_two(int value, int *oBits)
+DLLEXPORT int get_nearest_power_of_two(int value, int *oBits)
 {
 	int bits = 0, val = 1;
 
@@ -59,7 +69,7 @@ int get_nearest_power_of_two(int value, int *oBits)
 	Arguments:				@type [int]: type number, can be either OUTPUT_TYPE_BINARY (i.e. no encoding) or OUTPUT_TYPE_BASE64 to use base64 encoding
 	Returns:				0 for no error, otherwise error code (1 for unsupported encoding and 2 for enabling simple mode for non-binary encoding)
 */
-int crypt_set_output_type(int type)
+DLLEXPORT int crypt_set_output_type(int type)
 {
 	if ((type < OUTPUT_TYPE_BASE) || (type > OUTPUT_TYPE_BASE64))
 		return 1;
@@ -78,7 +88,7 @@ int crypt_set_output_type(int type)
 	Arguments:			@enable [int]:	enable (1) or disable (0) simple mode checking code for decryption phase
 	Returns:			0 on success, 1 on error (trying to set simple mode on non-binary encoding)
 */
-int crypt_set_simple_mode(int enable)
+DLLEXPORT int crypt_set_simple_mode(int enable)
 {
 	if ((out_type != OUTPUT_TYPE_BINARY) && (enable != 0))
 		return 1;
@@ -96,7 +106,7 @@ int crypt_set_simple_mode(int enable)
 							@vector_multiplier [int]: value to extend the vector by multiplicating it's size
 	Returns:				None
 */
-void crypt_set_password(char *salt, char *password, int vector_multiplier)
+DLLEXPORT void crypt_set_password(char *salt, char *password, int vector_multiplier)
 {
 	uint32_t shift = 0, val = 0, iSalt = 0, initial = 0;
 	uint64_t shifts = 0, initialValue = 0, tmp = 0;
@@ -157,7 +167,7 @@ void crypt_set_password(char *salt, char *password, int vector_multiplier)
 	Arguments:				None
 	Returns:				None
 */
-void crypt_cleanup()
+DLLEXPORT void crypt_cleanup()
 {
 	_ival = 0;
 	_vector_size = 0;
@@ -213,7 +223,7 @@ static unsigned char *crypt_process(unsigned char *block, int size, uint32_t crc
 							@new_size [size_t]: output integer value for the output buffer size
 	Returns:				output buffer of new_size bytes
 */
-unsigned char *crypt_encrypt(unsigned char *block, int size, int id, size_t *new_size)
+DLLEXPORT unsigned char *crypt_encrypt(unsigned char *block, int size, int id, size_t *new_size)
 {
 	int i;
 	uint32_t crc = 0;
@@ -312,7 +322,7 @@ unsigned char *crypt_encrypt(unsigned char *block, int size, int id, size_t *new
 							@read_size [int]: output integer value for the decoded output buffer size (different from new_size in case of base64 encoding)
 	Returns:				output buffer of read_size bytes
 */
-unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new_size, int *read_size)
+DLLEXPORT unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new_size, int *read_size)
 {
 	unsigned char data[4] = { 0 }, *out = NULL;
 	uint32_t old_crc = 0, new_crc = 0;
@@ -351,14 +361,12 @@ unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new
 	enc_size = GETUINT32(data);
 	DPRINTF("%s: Encoded chunk size is %d bytes\n", __FUNCTION__, size);
 
-	if (!simple_mode) {
-		data[0] = block[9];
-		data[1] = block[10];
-		data[2] = block[11];
-		data[3] = block[12];
-		old_crc = GETUINT32(data);
-		DPRINTF("%s: Original CRC-32 value is 0x%"PRIx32"\n", __FUNCTION__, old_crc);
-	}
+	data[0] = block[9];
+	data[1] = block[10];
+	data[2] = block[11];
+	data[3] = block[12];
+	old_crc = GETUINT32(data);
+	DPRINTF("%s: Original CRC-32 value is 0x%"PRIx32"\n", __FUNCTION__, old_crc);
 
 	if (out_type == OUTPUT_TYPE_BINARY) {
 		out = crypt_process(block+13, orig_size, old_crc, id);
@@ -381,9 +389,8 @@ unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new
 		csize = orig_size;
 	}
 
+	DPRINTF("%s: Got chunk size of %d bytes\n", __FUNCTION__, csize);
 	if (!simple_mode) {
-		DPRINTF("%s: Got chunk size of %d bytes\n", __FUNCTION__, csize);
-
 		new_crc = crc32_block(out, orig_size, 0xFFFFFFFF);
 		DPRINTF("%s: Checking CRC value for %d byte-block (0x%08"PRIx32" [expected] %c= 0x%08"PRIx32" [found])\n",
 				__FUNCTION__, orig_size, old_crc, old_crc == new_crc ? '=' : '!', new_crc);
@@ -397,6 +404,8 @@ unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new
 			return NULL;
 		}
 	}
+	else
+		DPRINTF("Ignoring original CRC-32 value since simple mode is on\n");
 
 	if (new_size != NULL)
 		*new_size = csize;
@@ -418,7 +427,7 @@ unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new
 							@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
 	Returns:				0 for no error, otherwise error code
 */
-int crypt_encrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
+DLLEXPORT int crypt_encrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
 {
 	unsigned char buf[BUFFER_SIZE] = { 0 };
 	char *outbuf;
@@ -466,12 +475,12 @@ int crypt_encrypt_file(char *filename1, char *filename2, char *salt, char *passw
 							@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
 	Returns:				0 for no error, otherwise error code
 */
-int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
+DLLEXPORT int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
 {
 	unsigned char buf[BUFFER_SIZE_BASE64+13] = { 0 };
 	char *outbuf;
-	int fd, fdOut, rc, rsize, id, ret = 0;
-	uint64_t already_read = 0, total_read = 0;
+	int fd, fdOut, rc, rsize, id, ret = 0, to_read = BUFFER_SIZE_BASE64+13;
+	uint64_t already_read = 0;
 
 	if ((salt != NULL) && (password != NULL))
 		crypt_set_password(salt, password, vector_multiplier);
@@ -489,11 +498,17 @@ int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *passw
 	}
 
 	id = 1;
-	while ((rc = read(fd, buf, sizeof(buf))) > 0) {
-		total_read += rc;
+	while ((rc = read(fd, buf, to_read)) > 0) {
 		outbuf = crypt_decrypt(buf, rc, id++, &rc, &rsize);
 		already_read += rsize + 13;
-		if ((total_read != already_read) && (!simple_mode)) {
+		if (simple_mode && (to_read != rsize + 13)) {
+			to_read = rsize + 13;
+			DPRINTF("%s: Current position is 0x%"PRIx64"\n", __FUNCTION__, already_read);
+			if (lseek(fd, already_read, SEEK_SET) != already_read)
+				DPRINTF("Warning: Seek error!\n");
+		}
+		else
+		if (!simple_mode) {
 			if (lseek(fd, already_read, SEEK_SET) != already_read)
 				DPRINTF("Warning: Seek error!\n");
 		}
@@ -520,53 +535,3 @@ int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *passw
 	DPRINTF("%s: Decryption done with code %d\n", __FUNCTION__, ret);
 	return ret;
 }
-
-#ifndef NO_MAIN
-int main(int argc, char *argv[])
-{
-	char *infile, *outfile, *tmp;
-	char salt[1024] = { 0 }, password[1024] = { 0 };
-	int decrypt = 0, nextIdx = 1, ret = 0, vector_multiplier = -1;//0x40;
-	
-	if (argc < 3) {
-		printf("Syntax: %s [-d] input_file output_file\n", argv[0]);
-		return 1;
-	}
-	
-	if (strcmp(argv[1], "-d") == 0) {
-		nextIdx++;
-		decrypt = 1;
-	}
-	
-	infile = strdup(argv[nextIdx++]);
-	if ((argv[nextIdx] == NULL) || (strlen(argv[nextIdx]) == 0)) {
-		printf("Error: Output file name is missing\n");
-		return 1;
-	}
-	outfile = strdup(argv[nextIdx]);
-	
-	tmp = getpass("Enter salt value: ");
-	if ((tmp != NULL) && (strlen(tmp) > 0))
-		strncpy(salt, tmp, sizeof(salt));
-	else
-		strncpy(salt, DEFAULT_SALT_VAL, sizeof(salt));
-	
-	tmp = getpass("Enter pasword: ");
-	if ((tmp != NULL) && (strlen(tmp) > 0))
-		strncpy(password, tmp, sizeof(password));
-	else {
-		printf("Error: No password entered\n");
-		return 1;
-	}
-
-	//crypt_set_output_type(OUTPUT_TYPE_BASE64);
-	if (!decrypt)
-	    ret = crypt_encrypt_file(infile, outfile, password, salt, vector_multiplier);
-	else
-	    ret = crypt_decrypt_file(infile, outfile, password, salt, vector_multiplier);
-	    
-	crypt_cleanup();
-	
-	return ret;
-}
-#endif

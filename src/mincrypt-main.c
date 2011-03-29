@@ -122,11 +122,16 @@ int main(int argc, char *argv[])
 			printf("Warning: Cannot set simple mode for non-binary encoding\n");
 
 	if (!decrypt)
-	    ret = crypt_encrypt_file(infile, outfile, password, salt, vector_mult);
+		ret = crypt_encrypt_file(infile, outfile, password, salt, vector_mult);
 	else
-	    ret = crypt_decrypt_file(infile, outfile, password, salt, vector_mult);
+		ret = crypt_decrypt_file(infile, outfile, password, salt, vector_mult);
 	    
 	crypt_cleanup();
 	
+	if (ret != 0)
+		fprintf(stderr, "Action failed with error code: %d\n", ret);
+	else
+		printf("Action has been completed successfully\n");
+
 	return ret;
 }

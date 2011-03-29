@@ -4,7 +4,7 @@ maxiter=2
 iter=0
 X=0
 
-dd if=/dev/zero of=test bs=1M count=512
+dd if=/dev/zero of=test bs=1M count=256
 
 while [ $iter -lt $maxiter ]; do
   T1=`date +%s`

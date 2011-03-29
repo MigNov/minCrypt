@@ -8,7 +8,7 @@
 #include <inttypes.h>
 #include <fcntl.h>
 
-float relevance_test(char *filename1, char *filename2, int skip1, int skip2)
+float relevance_test(char *filename1, char *filename2, int skip1, int skip2, char *type)
 {
 	unsigned char buf[BUFFER_SIZE] = { 0 }, buf2[BUFFER_SIZE] = { 0 };
 	int fd, fd2, rc, rc2;
@@ -52,32 +52,43 @@ float relevance_test(char *filename1, char *filename2, int skip1, int skip2)
 		pos = pos2;
 
 	relf = (float)rel / (pos / 100);
-	fprintf(stderr, "Relevance between %s and %s: %.4f%% (0x%"PRIx64" of 0x%"PRIx64" bytes are relevant)\n",
+
+	if (type == NULL)
+		printf("Relevance between %s and %s: %.4f%% (0x%"PRIx64" of 0x%"PRIx64" bytes are relevant)\n",
 				filename1, filename2, relf, rel, pos);
+	else
+		printf("%.4f%% (%s)", relf, type);
 
 	return relf;
 }
 
 void usage(char *name)
 {
-	printf("Syntax: %s file1 file2 [skip1-bytes] [skip2-bytes]\n", name);
+	printf("Syntax: %s [-p type] file1 file2 [skip1-bytes] [skip2-bytes]\n", name);
 	exit(1);
 }
 
 int main(int argc, char *argv[])
 {
 	int sk1 = 0, sk2 = 0;
+	int nextIdx = 1;
+	char *type = NULL;
 
 	if (argc < 3)
 		usage(argv[0]);
 
-	if (argc > 3)
-		sk1 = atoi(argv[3]);
+	if (strcmp(argv[1], "-p") == 0) {
+		type = strdup(argv[2]);
+		nextIdx += 2;
+	}
 
-	if (argc > 4)
-		sk1 = atoi(argv[4]);
+	if (argc > nextIdx+3)
+		sk1 = atoi(argv[nextIdx+3]);
 
-	relevance_test(argv[1], argv[2], sk1, sk2);
+	if (argc > nextIdx+4)
+		sk1 = atoi(argv[nextIdx+4]);
+
+	relevance_test(argv[nextIdx], argv[nextIdx+1], sk1, sk2, type);
 
 	return 0;
 }
