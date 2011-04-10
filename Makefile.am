@@ -1,12 +1,14 @@
 ACLOCAL_AMFLAGS=-I m4
 SOURCEDIR=`rpm --eval '%{_sourcedir}'`
 
-SUBDIRS = src php tests tools windows docs
+SUBDIRS = src php tests windows docs tools
+
+EXTRA_DIST = LICENSE html
 
 rpm:   dist-xz
-	cp $(PACKAGE_NAME).tar.xz $(SOURCEDIR)/$(PACKAGE_NAME).tar.xz
-	rpmbuild -bb SPEC/$(PACKAGE_NAME).spec
+	$(CP) $(PACKAGE_NAME)-$(VERSION).tar.xz $(SOURCEDIR)/$(PACKAGE_NAME)-$(VERSION).tar.xz
+	$(RPMBUILD) -bb $(PACKAGE_NAME).spec
 
 srpm:  dist-xz
-	cp $(PACKAGE_NAME).tar.xz $(SOURCEDIR)/$(PACKAGE_NAME).tar.xz
-	rpmbuild -bs SPEC/$(PACKAGE_NAME).spec
+	$(CP) $(PACKAGE_NAME)-$(VERSION).tar.xz $(SOURCEDIR)/$(PACKAGE_NAME)-$(VERSION).tar.xz
+	$(RPMBUILD) -bs $(PACKAGE_NAME).spec

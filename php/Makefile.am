@@ -1,11 +1,8 @@
 NAME=mincrypt-php
 CC=cc
-CP=cp
-RM=rm
-ECHO=echo
-PHPINC=`php-config --includes`
-PHPEDIR=`php-config --extension-dir`
-PHPCDIR=`php-config --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p'`
+PHPINC=`$(PHPCONFIG) --includes`
+PHPEDIR=`$(PHPCONFIG) --extension-dir`
+PHPCDIR=`$(PHPCONFIG) --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p'`
 MINCRYPT_OBJECTS=../src/mincrypt.o ../src/crc32.o ../src/base64.o
 
 EXTRA_DIST = mincrypt-php.c php_mincrypt.h

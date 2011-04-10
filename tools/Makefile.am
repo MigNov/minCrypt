@@ -3,6 +3,9 @@ BIN=`pwd`/bin
 
 all: make-bin make-api-docs-gen make-graph make-relevance generate-docs
 
+EXTRA_DIST = relevance/relevance.c graph/graph.c api-docs/generate-api-docs.c \
+             relevance/Makefile graph/Makefile api-docs/Makefile
+
 make-bin:
 	mkdir -p $(BIN)
 

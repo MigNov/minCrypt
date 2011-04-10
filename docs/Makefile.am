@@ -57,6 +57,13 @@ maintainer-clean-local: clean-local
 
 rebuild: all
 
+all:
+	rm -rf ../html
+	mkdir -p ../html
+	cp -pr *.html ../html
+	cp -pr *.css ../html
+	cp -pr graphics ../html
+
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(HTML_DIR)
 	for f in $(css) $(dot_html) $(png); do \

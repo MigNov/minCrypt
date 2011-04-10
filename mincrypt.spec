@@ -8,12 +8,12 @@
 
 Name:		mincrypt
 Version:	0.0.1
-Release:	1%{?dist}%{?extra_release}
+Release:	2%{?dist}%{?extra_release}
 Summary:	MinCrypt crypto-algorithm implementation
-Source:		http://www.migsoft.net/projects/mincrypt/mincrypt-%{version}.tar.gz
+Source:		http://www.migsoft.net/projects/mincrypt/mincrypt-%{version}.tar.xz
 
 Group:		Development/Libraries
-License:	GPL
+License:	LGPLv2+
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
 
 %if 0%{?suse_version}  
@@ -30,20 +30,20 @@ MinCrypt minimal encryption/decryption system
 
 %build
 %configure
-./configure
 make %{?_smp_mflags}
 
 %install
 make install DESTDIR=%{buildroot}
 mkdir -p $RPM_BUILD_ROOT%{_bindir}/bin
-mv $RPM_BUILD_ROOT/usr/local/bin/mincrypt $RPM_BUILD_ROOT%{_bindir}/mincrypt
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
+%doc LICENSE README docs
 %{_bindir}/mincrypt
+%{_libdir}/libmincrypt*
 %{php_extdir}/mincrypt-php.so
 %config(noreplace) %{php_confdir}/mincrypt-php.ini
 
