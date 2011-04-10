@@ -9,6 +9,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([You need libm to compile this utility]))
 AC_CHECK_TOOL([MKDIR], [mkdir])
+AC_CHECK_TOOL([MINGW32], [i686-pc-mingw32-gcc])
 
 dnl Specific XML catalog file for validation of generated html
 AC_ARG_WITH([xml-catalog-file],
