@@ -5,8 +5,21 @@ This application is the implementation of minCrypt algorithm as based
 on the minCrypt design document written to provide simple algorithm
 implementation on the minimum number of source files.
 
+This approach has been chosen to be able implement minCrypt to as many
+apps as possible using the minimum additional source files if the user
+wants to put the encryption/decryption logic directly into the app,
+i.e. not using a library version (although library version is part
+of this minCrypt implementation) and using it is encouraged.
+
+If you want to create the RPM packages for application the `make rpm`
+and `make srpm` commands have been introduced to create both binary
+package with the debuginfo version and the source package (srpm) for
+Linux platforms. The Windows port of the library is not packaged into
+any of those RPMs however if you make the package you can find
+compiled Windows port in the ./windows subdirectory of the repository.
+
 The algorithm has been implemented in C language with requirements
-for math libvirt (libm) and it's distributed under the GPL licence.
+for math library (libm) and it's distributed under the LGPLv2+ licence.
 
 Terminology
 -----------
@@ -21,10 +34,11 @@ work. For some of them you may be able to run with earlier releases, so
 please report any success to the mailing lists
 
  libm
- php-devel (to create PHP extension)
+ php-devel (optional, to create PHP extension)
+ mingw32-gcc (optional, to create Windows port)
 
 Copyright /  License
 --------------------
 
-All the application code is covered under the GPL licence.
-
+All the application code is covered under the LGPLv2+ licence. For more
+information please see the LICENSE file.
