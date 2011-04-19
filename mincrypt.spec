@@ -10,7 +10,7 @@ Name:		mincrypt
 Version:	0.0.1
 Release:	2%{?dist}%{?extra_release}
 Summary:	MinCrypt crypto-algorithm implementation
-Source:		http://www.migsoft.net/projects/mincrypt/mincrypt-%{version}.tar.xz
+Source:		http://www.migsoft.net/projects/mincrypt/mincrypt-%{version}.tar.gz
 
 Group:		Development/Libraries
 License:	LGPLv2+
