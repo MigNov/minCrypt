@@ -15,6 +15,8 @@ AC_CHECK_TOOL([CP], [cp])
 AC_CHECK_TOOL([PHPCONFIG], [php-config])
 AC_CHECK_TOOL([RPMBUILD], [rpmbuild])
 AC_CHECK_TOOL([MINGW32], [i686-pc-mingw32-gcc])
+AC_CHECK_TOOL([WX_CPP], [g++])
+AC_CHECK_TOOL([WXCONFIG], [wx-config])
 
 dnl Specific XML catalog file for validation of generated html
 AC_ARG_WITH([xml-catalog-file],
@@ -41,6 +43,10 @@ if test "x$XMLCATALOG" = "xno"; then
     AC_MSG_ERROR([xmlcatalog not found])
 fi
 
+if test "x$WXCONFIG" = "x"; then
+    WX_CPP=
+    AC_SUBST([WX_CPP])
+fi
 
 dnl Specific dir for HTML output ?
 AC_ARG_WITH([html-dir], [AC_HELP_STRING([--with-html-dir=path],
@@ -54,5 +60,5 @@ AC_ARG_WITH([html-subdir], [AC_HELP_STRING([--with-html-subdir=path],
 AC_SUBST([HTML_DIR])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile docs/Makefile src/Makefile windows/Makefile php/Makefile tests/Makefile tools/Makefile])
+AC_CONFIG_FILES([Makefile docs/Makefile src/Makefile windows/Makefile php/Makefile tests/Makefile examples/Makefile tools/Makefile])
 AC_OUTPUT

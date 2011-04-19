@@ -34,8 +34,9 @@ work. For some of them you may be able to run with earlier releases, so
 please report any success to the mailing lists
 
  libm
- php-devel (optional, to create PHP extension)
- mingw32-gcc (optional, to create Windows port)
+ php-devel (optional, to compile PHP extension)
+ mingw32-gcc (optional, to compile Windows port)
+ wxWidgets (optional, to compile minCrypt GUI application)
 
 Copyright /  License
 --------------------
