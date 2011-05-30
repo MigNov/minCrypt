@@ -41,7 +41,7 @@ PHP_RSHUTDOWN_FUNCTION(mincrypt);
 PHP_MINFO_FUNCTION(mincrypt);
 
 PHP_FUNCTION(mincrypt_set_password);
-PHP_FUNCTION(mincrypt_set_output_type);
+PHP_FUNCTION(mincrypt_set_encoding_type);
 PHP_FUNCTION(mincrypt_get_last_error);
 PHP_FUNCTION(mincrypt_reset_id);
 PHP_FUNCTION(mincrypt_last_size);

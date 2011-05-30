@@ -21,7 +21,7 @@ ZEND_DECLARE_MODULE_GLOBALS(mincrypt)
 
 static function_entry mincrypt_functions[] = {
 	PHP_FE(mincrypt_set_password,NULL)
-	PHP_FE(mincrypt_set_output_type,NULL)
+	PHP_FE(mincrypt_set_encoding_type,NULL)
 	PHP_FE(mincrypt_get_last_error, NULL)
 	PHP_FE(mincrypt_reset_id, NULL)
 	PHP_FE(mincrypt_last_size, NULL)
@@ -79,8 +79,8 @@ PHP_MINFO_FUNCTION(mincrypt)
 
 PHP_MINIT_FUNCTION(mincrypt)
 {
-	REGISTER_LONG_CONSTANT("MINCRYPT_OUTPUT_TYPE_BINARY",	OUTPUT_TYPE_BINARY, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("MINCRYPT_OUTPUT_TYPE_BASE64",	OUTPUT_TYPE_BASE64, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("MINCRYPT_ENCODING_TYPE_BINARY",	ENCODING_TYPE_BINARY, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("MINCRYPT_ENCODING_TYPE_BASE64",	ENCODING_TYPE_BASE64, CONST_CS | CONST_PERSISTENT);
 
 	return SUCCESS;
 }
@@ -95,10 +95,10 @@ PHP_MSHUTDOWN_FUNCTION(mincrypt)
 /* Function to set the error message and pass it to PHP */
 /*
 	Private function name:	set_error
-	Since version:			0.0.1
-	Description:			Function to set the error message from the library
-	Arguments:				@msg [string]: error message string
-	Returns:				None
+	Since version:		0.0.1
+	Description:		Function to set the error message from the library
+	Arguments:		@msg [string]: error message string
+	Returns:		None
 */
 void set_error(char *msg)
 {
@@ -109,10 +109,10 @@ void set_error(char *msg)
 
 /*
 	Private function name:	next_id
-	Since version:			0.0.1
-	Description:			Function to get the next chunk id, can be reset to 0 before processing to start over
-	Arguments:				@reset [int]: flag to reset the chunk id counter or not, can be 0 (don't reset) or 1 (reset)
-	Returns:				id of new chunk
+	Since version:		0.0.1
+	Description:		Function to get the next chunk id, can be reset to 0 before processing to start over
+	Arguments:		@reset [int]: flag to reset the chunk id counter or not, can be 0 (don't reset) or 1 (reset)
+	Returns:		id of new chunk
 */
 static int next_id(int reset)
 {
@@ -123,11 +123,11 @@ static int next_id(int reset)
 }
 
 /*
-	Function name:			mincrypt_get_last_error
-	Since version:			0.0.1
-	Description:			Function to get the last error set by set_error() function
-	Arguments:				None
-	Returns:				last error string or NULL value if no error yet
+	Function name:		mincrypt_get_last_error
+	Since version:		0.0.1
+	Description:		Function to get the last error set by set_error() function
+	Arguments:		None
+	Returns:		last error string or NULL value if no error yet
 */
 PHP_FUNCTION(mincrypt_get_last_error)
 {
@@ -136,11 +136,11 @@ PHP_FUNCTION(mincrypt_get_last_error)
 }
 
 /*
-	Function name:			mincrypt_reset_id
-	Since version:			0.0.1
-	Description:			Function to reset the chunk id for using the low-level API in PHP
-	Arguments:				None
-	Returns:				1 as id of the new chunk since it's always starting at 1
+	Function name:		mincrypt_reset_id
+	Since version:		0.0.1
+	Description:		Function to reset the chunk id for using the low-level API in PHP
+	Arguments:		None
+	Returns:		1 as id of the new chunk since it's always starting at 1
 */
 PHP_FUNCTION(mincrypt_reset_id)
 {
@@ -148,11 +148,11 @@ PHP_FUNCTION(mincrypt_reset_id)
 }
 
 /*
-	Function name:			mincrypt_next_chunk_id
-	Since version:			0.0.1
-	Description:			Function to get the next chunk id
-	Arguments:				None
-	Returns:				id of next chunk
+	Function name:		mincrypt_next_chunk_id
+	Since version:		0.0.1
+	Description:		Function to get the next chunk id
+	Arguments:		None
+	Returns:		id of next chunk
 */
 PHP_FUNCTION(mincrypt_next_chunk_id)
 {
@@ -160,11 +160,11 @@ PHP_FUNCTION(mincrypt_next_chunk_id)
 }
 
 /*
-	Function name:			mincrypt_last_size
-	Since version:			0.0.1
-	Description:			Function to get output size of last encrypt/decrypt operation
-	Arguments:				None
-	Returns:				size
+	Function name:		mincrypt_last_size
+	Since version:		0.0.1
+	Description:		Function to get output size of last encrypt/decrypt operation
+	Arguments:		None
+	Returns:		size long value
 */
 PHP_FUNCTION(mincrypt_last_size)
 {
@@ -172,13 +172,13 @@ PHP_FUNCTION(mincrypt_last_size)
 }
 
 /*
-	Function name:			mincrypt_set_password
-	Since version:			0.0.1
-	Description:			Function to set the password and generate initialization vectors. Function also sets the next_id to 1 (resets it).
-	Arguments:				@password [string]: password for IV generation
-							@salt [string]: salt value for IV generation
-							@vector_multiplier [int]: vector multiplier value for IV generation
-	Returns:				TRUE if success, FALSE if error. You can get the error using mincrypt_get_last_error() call
+	Function name:		mincrypt_set_password
+	Since version:		0.0.1
+	Description:		Function to set the password and generate initialization vectors. Function also sets the next_id to 1 (resets it).
+	Arguments:		@password [string]: password for IV generation
+				@salt [string]: salt value for IV generation
+				@vector_multiplier [int]: vector multiplier value for IV generation
+	Returns:		TRUE if success, FALSE if error. You can get the error using mincrypt_get_last_error() call
 */
 PHP_FUNCTION(mincrypt_set_password)
 {
@@ -202,13 +202,13 @@ PHP_FUNCTION(mincrypt_set_password)
 }
 
 /*
-	Function name:			mincrypt_set_output_type
-	Since version:			0.0.1
-	Description:			Function to set the output type for encryption. Applies only to the encryption and decryption itself as data are always returned to PHP script as base64.
-	Arguments:				@type [int]: type identified, only MINCRYPT_OUTPUT_TYPE_BINARY are MINCRYPT_OUTPUT_TYPE_BASE64 are supported right now
-	Returns:				TRUE if success, FALSE if error. You can get the error using mincrypt_get_last_error() call
+	Function name:		mincrypt_set_encoding_type
+	Since version:		0.0.1
+	Description:		Function to set the output type for encryption. Applies only to the encryption and decryption itself as data are always returned to PHP script as base64.
+	Arguments:		@type [int]: type identified, only MINCRYPT_ENCODING_TYPE_BINARY are MINCRYPT_ENCODING_TYPE_BASE64 are supported right now
+	Returns:		TRUE if success, FALSE if error. You can get the error using mincrypt_get_last_error() call
 */
-PHP_FUNCTION(mincrypt_set_output_type)
+PHP_FUNCTION(mincrypt_set_encoding_type)
 {
 	int type = -1;
 
@@ -216,7 +216,7 @@ PHP_FUNCTION(mincrypt_set_output_type)
 		RETURN_FALSE;
 
 	MINCRYPT_G(type) = type;
-	if (crypt_set_output_type(type) != 0) {
+	if (crypt_set_encoding_type(type) != 0) {
 		set_error("Invalid type");
 		RETURN_FALSE;
 	}
@@ -225,12 +225,13 @@ PHP_FUNCTION(mincrypt_set_output_type)
 }
 
 /*
-	Function name:			mincrypt_encrypt
-	Since version:			0.0.1
-	Description:			Function for the low-level data block encryption
-	Arguments:				@block [buffer]: input buffer for the data block encryption
-							@block_size [int]: size of the input buffer
-	Returns:				base64 encoded output string, FALSE if error. You can get the error using mincrypt_get_last_error() call
+	Function name:		mincrypt_encrypt
+	Since version:		0.0.1
+	Description:		Function for the low-level data block encryption
+	Arguments:		@block [buffer]: input buffer for the data block encryption
+				@block_size [int]: size of the input buffer
+				@flags [int]: flags for decryption, can be MINCRYPT_ENCODING_TYPE_BINARY or MINCRYPT_ENCODING_TYPE_BASE64 meaning the output is in this format
+	Returns:		encrypted data, FALSE if error. You can get the error using mincrypt_get_last_error() call
 */
 PHP_FUNCTION(mincrypt_encrypt)
 {
@@ -238,13 +239,14 @@ PHP_FUNCTION(mincrypt_encrypt)
 	char *tmp = NULL;
 	int block_len, block_size = -1;
 	size_t rc;
+	int flags = 0;
 	
 	if (!MINCRYPT_G (vector_set)) {
 		set_error("Initialization vectors are not set. Please set them first!");
 		RETURN_FALSE;
 	}
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &block,&block_len,&block_size) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl|l", &block,&block_len,&block_size,&flags) == FAILURE)
         	RETURN_FALSE;
 	
 	MINCRYPT_G (last_size) = 0;
@@ -259,20 +261,30 @@ PHP_FUNCTION(mincrypt_encrypt)
 		RETURN_FALSE;
 	}
 
-	tmp = (char *)base64_encode( (const char *)block_out, &rc);
+	if (flags & ENCODING_TYPE_BASE64) {
+		tmp = (char *)base64_encode( (const char *)block_out, &rc);
+		MINCRYPT_G (last_size) = rc;
+		RETURN_STRING(tmp, 1);
+	}
+	else {
+		tmp = (char *)emalloc( rc * sizeof(unsigned char) );
+		memcpy(tmp, block_out, rc);
+		MINCRYPT_G (last_size) = rc;
 
-	MINCRYPT_G (last_size) = rc;
-
-	RETURN_STRING(tmp, 1);
+		Z_STRLEN_P(return_value) = rc;
+		Z_STRVAL_P(return_value) = tmp;
+		Z_TYPE_P(return_value) = IS_STRING;
+	}
 }
 
 /*
 	Function name:			mincrypt_decrypt
 	Since version:			0.0.1
 	Description:			Function for the low-level data block decryption
-	Arguments:				@block [buffer]: input buffer for the data block decryption
-							@block_size [int]: size of the input buffer
-	Returns:				base64 encoded output string, FALSE if error. You can get the error using mincrypt_get_last_error() call
+	Arguments:			@block [buffer]: input buffer for the data block decryption
+					@block_size [int]: size of the input buffer
+					@flags [int]: flags for decryption, can be MINCRYPT_ENCODING_TYPE_BINARY or MINCRYPT_ENCODING_TYPE_BASE64 meaning the input is in this format
+	Returns:			decrypted data, FALSE if error. You can get the error using mincrypt_get_last_error() call
 */
 PHP_FUNCTION(mincrypt_decrypt)
 {
@@ -280,13 +292,14 @@ PHP_FUNCTION(mincrypt_decrypt)
 	char *tmp = NULL;
 	int block_len, block_size = -1;
 	size_t rc;
+	int flags = 0;
 	
 	if (!MINCRYPT_G (vector_set)) {
 		set_error("Initialization vectors are not set. Please set them first!");
 		RETURN_FALSE;
 	}
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &block,&block_len,&block_size) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl|l", &block,&block_len,&block_size,&flags) == FAILURE)
 	        RETURN_FALSE;
 	
 	MINCRYPT_G (last_size) = 0;
@@ -294,7 +307,8 @@ PHP_FUNCTION(mincrypt_decrypt)
 		block_size = strlen( (char *)block );
 
 	rc = block_size;
-	tmp = (char *)base64_decode( (const char *)block, &rc );
+	if (flags & ENCODING_TYPE_BASE64)
+		tmp = (char *)base64_decode( (const char *)block, &rc );
 
 	block_out = emalloc( (block_size + 16) * sizeof(unsigned char) );
 	if (block_out == NULL) {
@@ -303,18 +317,28 @@ PHP_FUNCTION(mincrypt_decrypt)
 		RETURN_FALSE;
 	}
 
-	block_out = (unsigned char *)crypt_decrypt((unsigned char *)tmp, rc - 1, next_id(0), &rc, NULL);
+	if (flags & ENCODING_TYPE_BASE64)
+		block_out = (unsigned char *)crypt_decrypt((unsigned char *)tmp, rc - 1, next_id(0), &rc, NULL);
+	else {
+		block_out = (unsigned char *)crypt_decrypt((unsigned char *)block, block_size - 1, next_id(0), &rc, NULL);
+		rc--;
+	}
+
 	if ((block_out == NULL) || (rc < 0)) {
 		efree(block_out);
 		set_error("Decryption failed!");
 		RETURN_FALSE;
 	}
 
-	block_out[rc] = 0;
+	free(tmp);
+	tmp = (char *)emalloc( rc * sizeof(unsigned char) );
+	memcpy(tmp, block_out, rc);
 	
 	MINCRYPT_G (last_size) = rc;
 
-	RETURN_STRING((char *)block_out, 1);
+	Z_STRLEN_P(return_value) = rc;
+	Z_STRVAL_P(return_value) = tmp;
+	Z_TYPE_P(return_value) = IS_STRING;
 }
 
 /*
@@ -322,7 +346,6 @@ PHP_FUNCTION(mincrypt_decrypt)
 	Since version:			0.0.1
 	Description:			Function for high-level encryption of the whole file. You have to have the IVs set using mincrypt_set_password() call already
 	Arguments:				@file1 [string]: input (original) file
-							@file2 [string]: output (encrypted) file
 	Returns:				0 for no error or error code. mincrypt_get_last_error() could be used to get the error string representation if not 0
 */
 PHP_FUNCTION(mincrypt_encrypt_file)

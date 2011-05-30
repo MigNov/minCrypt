@@ -15,9 +15,8 @@
 	$size = strlen($orig);
 	$in = mincrypt_encrypt($orig, $size);
 	mincrypt_reset_id();
-	$size = strlen($in);
+	$size = mincrypt_last_size();
 	$out = mincrypt_decrypt($in, $size);
-
 	$lowlevel_ok = ($out == $orig);
 
 	mincrypt_set_password($password2, $salt, $mult);

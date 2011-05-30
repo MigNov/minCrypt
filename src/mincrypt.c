@@ -33,16 +33,16 @@ do {} while(0)
 uint32_t *_iv = NULL;
 uint64_t _ival = 0;
 int _vector_size = 0;
-int out_type = OUTPUT_TYPE_BINARY;
+int out_type = ENCODING_TYPE_BINARY;
 int simple_mode = 0;
 
 /*
 	Private function name:	get_nearest_power_of_two
-	Since version:			0.0.1
-	Description:			This private function is used to get the nearest higher power of two to the value, it's also returning number of bits used for the number returned in oBits variable
-	Arguments:				@value [int]: value to which find the nearest power of two
-							@oBits [int]: number of bits used by the return value as it's power of two
-	Returns:				nearest higher power of two to value
+	Since version:		0.0.1
+	Description:		This private function is used to get the nearest higher power of two to the value, it's also returning number of bits used for the number returned in oBits variable
+	Arguments:		@value [int]: value to which find the nearest power of two
+				@oBits [int]: number of bits used by the return value as it's power of two
+	Returns:		nearest higher power of two to value
 */
 DLLEXPORT int get_nearest_power_of_two(int value, int *oBits)
 {
@@ -63,18 +63,18 @@ DLLEXPORT int get_nearest_power_of_two(int value, int *oBits)
 }
 
 /*
-	Function name:			crypt_set_output_type
-	Since version:			0.0.1
-	Description:			This function is used to set type of output encoding
-	Arguments:				@type [int]: type number, can be either OUTPUT_TYPE_BINARY (i.e. no encoding) or OUTPUT_TYPE_BASE64 to use base64 encoding
-	Returns:				0 for no error, otherwise error code (1 for unsupported encoding and 2 for enabling simple mode for non-binary encoding)
+	Function name:		crypt_set_encoding_type
+	Since version:		0.0.1
+	Description:		This function is used to set type of output encoding
+	Arguments:		@type [int]: type number, can be either ENCODING_TYPE_BINARY (i.e. no encoding) or ENCODING_TYPE_BASE64 to use base64 encoding
+	Returns:		0 for no error, otherwise error code (1 for unsupported encoding and 2 for enabling simple mode for non-binary encoding)
 */
-DLLEXPORT int crypt_set_output_type(int type)
+DLLEXPORT int crypt_set_encoding_type(int type)
 {
-	if ((type < OUTPUT_TYPE_BASE) || (type > OUTPUT_TYPE_BASE64))
+	if ((type < ENCODING_TYPE_BASE) || (type > ENCODING_TYPE_BASE64))
 		return 1;
 
-	if (simple_mode && (type != OUTPUT_TYPE_BINARY))
+	if (simple_mode && (type != ENCODING_TYPE_BINARY))
 		return 2;
 
 	out_type = type;
@@ -82,15 +82,15 @@ DLLEXPORT int crypt_set_output_type(int type)
 }
 
 /*
-	Function name:			crypt_set_simple_mode
-	Since version:			0.0.1
-	Description:			This function is used to enable or disable simple mode on the decryption phase. Simple mode is the mode where CRC-32 checking and read size checking are disabled. Other encoding than binary encoding cannot work in this mode.
-	Arguments:			@enable [int]:	enable (1) or disable (0) simple mode checking code for decryption phase
-	Returns:			0 on success, 1 on error (trying to set simple mode on non-binary encoding)
+	Function name:		crypt_set_simple_mode
+	Since version:		0.0.1
+	Description:		This function is used to enable or disable simple mode on the decryption phase. Simple mode is the mode where CRC-32 checking and read size checking are disabled. Other encoding than binary encoding cannot work in this mode.
+	Arguments:		@enable [int]:	enable (1) or disable (0) simple mode checking code for decryption phase
+	Returns:		0 on success, 1 on error (trying to set simple mode on non-binary encoding)
 */
 DLLEXPORT int crypt_set_simple_mode(int enable)
 {
-	if ((out_type != OUTPUT_TYPE_BINARY) && (enable != 0))
+	if ((out_type != ENCODING_TYPE_BINARY) && (enable != 0))
 		return 1;
 
 	simple_mode = enable;
@@ -98,13 +98,13 @@ DLLEXPORT int crypt_set_simple_mode(int enable)
 }
 
 /*
-	Function name:			crypt_set_password
-	Since version:			0.0.1
-	Description:			This function is used to calculate initialization vectors (IV) from the password and salt values
-	Arguments:				@salt [string]: salt value to be used for the IV generation
-							@password [string]: password to be used for IV generation
-							@vector_multiplier [int]: value to extend the vector by multiplicating it's size
-	Returns:				None
+	Function name:		crypt_set_password
+	Since version:		0.0.1
+	Description:		This function is used to calculate initialization vectors (IV) from the password and salt values
+	Arguments:		@salt [string]: salt value to be used for the IV generation
+				@password [string]: password to be used for IV generation
+				@vector_multiplier [int]: value to extend the vector by multiplicating it's size
+	Returns:		None
 */
 DLLEXPORT void crypt_set_password(char *salt, char *password, int vector_multiplier)
 {
@@ -161,11 +161,11 @@ DLLEXPORT void crypt_set_password(char *salt, char *password, int vector_multipl
 }
 
 /*
-	Function name:			crypt_cleanup
-	Since version:			0.0.1
-	Description:			This function is used to cleanup all the memory allocated by crypt_set_password() function
-	Arguments:				None
-	Returns:				None
+	Function name:		crypt_cleanup
+	Since version:		0.0.1
+	Description:		This function is used to cleanup all the memory allocated by crypt_set_password() function
+	Arguments:		None
+	Returns:		None
 */
 DLLEXPORT void crypt_cleanup()
 {
@@ -176,13 +176,13 @@ DLLEXPORT void crypt_cleanup()
 
 /*
 	Private function name:	crypt_process
-	Since version:			0.0.1
-	Description:			This function is used to process the encryption and decryption of the data block
-	Arguments:				@block [buffer]: buffer of data to be encrypted/decrypted
-							@size [int]: size of buffer
-							@crc [uint32_t]: CRC value for the data block (used as a part of algorithm)
-							@id [int]: identifier of the chunk to be encoded (used as a part of algorithm)
-	Returns:				output buffer of identical length as original
+	Since version:		0.0.1
+	Description:		This function is used to process the encryption and decryption of the data block
+	Arguments:		@block [buffer]: buffer of data to be encrypted/decrypted
+				@size [int]: size of buffer
+				@crc [uint32_t]: CRC value for the data block (used as a part of algorithm)
+				@id [int]: identifier of the chunk to be encoded (used as a part of algorithm)
+	Returns:		output buffer of identical length as original
 */
 static unsigned char *crypt_process(unsigned char *block, int size, uint32_t crc, int id)
 {
@@ -214,14 +214,14 @@ static unsigned char *crypt_process(unsigned char *block, int size, uint32_t crc
 }
 
 /*
-	Function name:			crypt_encrypt
-	Since version:			0.0.1
-	Description:			Main function for the data encryption. Takes the block, size and id as input arguments with returning new size
-	Arguments:				@block [buffer]: buffer of data to be encrypted/decrypted
-							@size [int]: size of buffer
-							@id [int]: identifier of the chunk to be encoded
-							@new_size [size_t]: output integer value for the output buffer size
-	Returns:				output buffer of new_size bytes
+	Function name:		crypt_encrypt
+	Since version:		0.0.1
+	Description:		Main function for the data encryption. Takes the block, size and id as input arguments with returning new size
+	Arguments:		@block [buffer]: buffer of data to be encrypted/decrypted
+				@size [int]: size of buffer
+				@id [int]: identifier of the chunk to be encoded
+				@new_size [size_t]: output integer value for the output buffer size
+	Returns:		output buffer of new_size bytes
 */
 DLLEXPORT unsigned char *crypt_encrypt(unsigned char *block, int size, int id, size_t *new_size)
 {
@@ -245,7 +245,7 @@ DLLEXPORT unsigned char *crypt_encrypt(unsigned char *block, int size, int id, s
 	if (tmp == NULL)
 		return NULL;
 
-	if (out_type == OUTPUT_TYPE_BASE64) {
+	if (out_type == ENCODING_TYPE_BASE64) {
 		int orig_size = size;
 		unsigned char *tmp2 = NULL;
 
@@ -280,7 +280,7 @@ DLLEXPORT unsigned char *crypt_encrypt(unsigned char *block, int size, int id, s
                 free(tmp2);
 	}
 	else
-	if (out_type == OUTPUT_TYPE_BINARY) {
+	if (out_type == ENCODING_TYPE_BINARY) {
 		csize = size + 13;
 
 		out = malloc( csize * sizeof(unsigned char) );
@@ -312,15 +312,15 @@ DLLEXPORT unsigned char *crypt_encrypt(unsigned char *block, int size, int id, s
 }
 
 /*
-	Function name:			crypt_decrypt
-	Since version:			0.0.1
-	Description:			Main function for the data decryption. Takes the block, size and id as input arguments with returning both decrypted encoded and decrypted decoded (raw) size
-	Arguments:				@block [buffer]: buffer of data to be encrypted/decrypted
-							@size [int]: size of buffer
-							@id [int]: identifier of the chunk to be encoded
-							@new_size [size_t]: output integer value for the output buffer size
-							@read_size [int]: output integer value for the decoded output buffer size (different from new_size in case of base64 encoding)
-	Returns:				output buffer of read_size bytes
+	Function name:		crypt_decrypt
+	Since version:		0.0.1
+	Description:		Main function for the data decryption. Takes the block, size and id as input arguments with returning both decrypted encoded and decrypted decoded (raw) size
+	Arguments:		@block [buffer]: buffer of data to be encrypted/decrypted
+				@size [int]: size of buffer
+				@id [int]: identifier of the chunk to be encoded
+				@new_size [size_t]: output integer value for the output buffer size
+				@read_size [int]: output integer value for the decoded output buffer size (different from new_size in case of base64 encoding)
+	Returns:		output buffer of read_size bytes
 */
 DLLEXPORT unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new_size, int *read_size)
 {
@@ -344,7 +344,7 @@ DLLEXPORT unsigned char *crypt_decrypt(unsigned char *block, int size, int id, s
 
 	out_type = block[0];
 
-	DPRINTF("%s: Found type 0x%02x [%s]\n", __FUNCTION__, out_type, (out_type == OUTPUT_TYPE_BASE64) ? "base64" : "binary" );
+	DPRINTF("%s: Found type 0x%02x [%s]\n", __FUNCTION__, out_type, (out_type == ENCODING_TYPE_BASE64) ? "base64" : "binary" );
 	DPRINTF("%s: Input size is %d\n", __FUNCTION__, size);
 
 	data[0] = block[1];
@@ -368,7 +368,7 @@ DLLEXPORT unsigned char *crypt_decrypt(unsigned char *block, int size, int id, s
 	old_crc = GETUINT32(data);
 	DPRINTF("%s: Original CRC-32 value is 0x%"PRIx32"\n", __FUNCTION__, old_crc);
 
-	if (out_type == OUTPUT_TYPE_BINARY) {
+	if (out_type == ENCODING_TYPE_BINARY) {
 		out = crypt_process(block+13, orig_size, old_crc, id);
 		if (out == NULL)
 			return NULL;
@@ -376,7 +376,7 @@ DLLEXPORT unsigned char *crypt_decrypt(unsigned char *block, int size, int id, s
 		csize = orig_size;
 	}
 	else
-	if (out_type == OUTPUT_TYPE_BASE64) {
+	if (out_type == ENCODING_TYPE_BASE64) {
 		unsigned char *tmp = NULL;
 
 		tmp = (unsigned char *)base64_decode( (const char *)block+13, &size);
@@ -407,8 +407,10 @@ DLLEXPORT unsigned char *crypt_decrypt(unsigned char *block, int size, int id, s
 	else
 		DPRINTF("Ignoring original CRC-32 value since simple mode is on\n");
 
-	if (new_size != NULL)
+	if (new_size != NULL) {
+		DPRINTF("Setting new size to %d bytes\n", csize);
 		*new_size = csize;
+	}
 
 	if (read_size != NULL)
 		*read_size = (enc_size > 0) ? enc_size : csize;
@@ -417,15 +419,15 @@ DLLEXPORT unsigned char *crypt_decrypt(unsigned char *block, int size, int id, s
 }
 
 /*
-	Function name:			crypt_encrypt_file
-	Since version:			0.0.1
-	Description:			Function for the entire file encryption. Takes the input and output files, salt, password and vector_multiplier value
-	Arguments:				@filename1 [string]: input (original) file
-							@filename2 [string]: output (encrypted) file
-							@salt [string]: salt value to be used, may be NULL to use already set IVs if applicable, used only with conjuction password
-							@password [string]: password value to be used, may be NULL to use already set IVs if applicable, used only with conjuction salt
-							@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
-	Returns:				0 for no error, otherwise error code
+	Function name:		crypt_encrypt_file
+	Since version:		0.0.1
+	Description:		Function for the entire file encryption. Takes the input and output files, salt, password and vector_multiplier value
+	Arguments:		@filename1 [string]: input (original) file
+				@filename2 [string]: output (encrypted) file
+				@salt [string]: salt value to be used, may be NULL to use already set IVs if applicable, used only with conjuction password
+				@password [string]: password value to be used, may be NULL to use already set IVs if applicable, used only with conjuction salt
+				@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
+	Returns:		0 for no error, otherwise error code
 */
 DLLEXPORT int crypt_encrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
 {
@@ -437,13 +439,21 @@ DLLEXPORT int crypt_encrypt_file(char *filename1, char *filename2, char *salt, c
 		crypt_set_password(salt, password, vector_multiplier);
 
 	DPRINTF("%s: Encrypting %s to %s\n", __FUNCTION__, filename1, filename2);
-	fd = open(filename1, O_RDONLY | O_LARGEFILE);
+	fd = open(filename1, O_RDONLY | O_LARGEFILE
+                  #ifdef WINDOWS
+                  | O_BINARY
+                  #endif
+                  );
 	if (fd < 0) {
 		errno_saved = errno;
 		DPRINTF("%s: Cannot open file %s\n", __FUNCTION__, filename1);
 		return -errno_saved;
 	}
-	fdOut = open(filename2, O_WRONLY | O_LARGEFILE | O_TRUNC | O_CREAT, 0644);
+	fdOut = open(filename2, O_WRONLY | O_LARGEFILE | O_TRUNC | O_CREAT
+                  #ifdef WINDOWS
+                  | O_BINARY
+                  #endif
+                  , 0644);
 	if (fdOut < 0) {
 		errno_saved = errno;
 		DPRINTF("%s: Cannot open file %s for writing\n", filename2);
@@ -465,15 +475,15 @@ DLLEXPORT int crypt_encrypt_file(char *filename1, char *filename2, char *salt, c
 }
 
 /*
-	Function name:			crypt_decrypt_file
-	Since version:			0.0.1
-	Description:			Function for the entire file decryption. Takes the input and output files, salt, password and vector_multiplier value
-	Arguments:				@filename1 [string]: input (encrypted) file
-							@filename2 [string]: output (decrypted) file
-							@salt [string]: salt value to be used, may be NULL to use already set IVs if applicable, used only with conjuction password
-							@password [string]: password value to be used, may be NULL to use already set IVs if applicable, used only with conjuction salt
-							@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
-	Returns:				0 for no error, otherwise error code
+	Function name:		crypt_decrypt_file
+	Since version:		0.0.1
+	Description:		Function for the entire file decryption. Takes the input and output files, salt, password and vector_multiplier value
+	Arguments:		@filename1 [string]: input (encrypted) file
+				@filename2 [string]: output (decrypted) file
+				@salt [string]: salt value to be used, may be NULL to use already set IVs if applicable, used only with conjuction password
+				@password [string]: password value to be used, may be NULL to use already set IVs if applicable, used only with conjuction salt
+				@vector_multiplier [int]: vector multiplier value, can be 0, used only if salt and password are set
+	Returns:		0 for no error, otherwise error code
 */
 DLLEXPORT int crypt_decrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
 {
@@ -486,12 +496,20 @@ DLLEXPORT int crypt_decrypt_file(char *filename1, char *filename2, char *salt, c
 		crypt_set_password(salt, password, vector_multiplier);
 
 	DPRINTF("%s: Decrypting %s to %s\n", __FUNCTION__, filename1, filename2);
-	fd = open(filename1, O_RDONLY | O_LARGEFILE);
+	fd = open(filename1, O_RDONLY | O_LARGEFILE
+                  #ifdef WINDOWS
+                  | O_BINARY
+                  #endif
+                  );
 	if (fd < 0) {
 		DPRINTF("%s: Cannot open file %s\n", __FUNCTION__, filename1);
 		return -EPERM;
 	}
-	fdOut = open(filename2, O_WRONLY | O_LARGEFILE | O_TRUNC | O_CREAT, 0644);
+	fdOut = open(filename2, O_WRONLY | O_LARGEFILE | O_TRUNC | O_CREAT
+                  #ifdef WINDOWS
+                  | O_BINARY
+                  #endif
+                  , 0644);
 	if (fdOut < 0) {
 		DPRINTF("%s: Cannot open file %s for writing\n", filename2);
 		return -EIO;
@@ -535,3 +553,4 @@ DLLEXPORT int crypt_decrypt_file(char *filename1, char *filename2, char *salt, c
 	DPRINTF("%s: Decryption done with code %d\n", __FUNCTION__, ret);
 	return ret;
 }
+

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-MAX_FAIL_RELEVANCE=5
+MAX_FAIL_RELEVANCE=3
 
-dd if=/dev/urandom of=test bs=1M count=16
+dd if=/dev/urandom of=test bs=1M count=64
 
 # Valid password
 ../src/mincrypt --input-file=test --output-file=test.enc --salt=test --password=test > /dev/null

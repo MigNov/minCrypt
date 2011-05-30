@@ -18,9 +18,9 @@
 #define DEFAULT_SALT_VAL		SIGNATURE
 #define DEFAULT_VECTOR_MULT		0x20
 
-#define OUTPUT_TYPE_BASE		0x10
-#define OUTPUT_TYPE_BINARY		OUTPUT_TYPE_BASE
-#define OUTPUT_TYPE_BASE64		OUTPUT_TYPE_BASE + 1
+#define ENCODING_TYPE_BASE		0x10
+#define ENCODING_TYPE_BINARY		ENCODING_TYPE_BASE
+#define ENCODING_TYPE_BASE64		ENCODING_TYPE_BASE + 1
 
 #ifdef WINDOWS
 #undef O_LARGEFILE
@@ -74,7 +74,7 @@
 unsigned char *base64_encode(const char *in, size_t *size);
 unsigned char *base64_decode(const char *in, size_t *size);
 void crypt_set_password(char *salt, char *password, int vector_multiplier);
-int crypt_set_output_type(int type);
+int crypt_set_encoding_type(int type);
 void crypt_cleanup();
 unsigned char *crypt_encrypt(unsigned char *block, int size, int id, size_t *new_size);
 unsigned char *crypt_decrypt(unsigned char *block, int size, int id, size_t *new_size, int *read_size);

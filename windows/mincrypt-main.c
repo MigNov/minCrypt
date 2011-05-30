@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 	}
 	
 	if ((type != NULL) && (strcmp(type, "base64") == 0))
-		if (crypt_set_output_type(OUTPUT_TYPE_BASE64) != 0)
+		if (crypt_set_encoding_type(ENCODING_TYPE_BASE64) != 0)
 			printf("Warning: Cannot set base64 encoding, using binary encoding instead\n");
 
 	if (simple_mode)
