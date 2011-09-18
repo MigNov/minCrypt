@@ -1,4 +1,4 @@
-AC_INIT([mincrypt], [0.0.1], [mignov@gmail.com])
+AC_INIT([mincrypt], [0.0.2], [mignov@gmail.com])
 LT_INIT
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror])
