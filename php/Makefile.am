@@ -3,7 +3,7 @@ CC=cc
 PHPINC=`$(PHPCONFIG) --includes`
 PHPEDIR=`$(PHPCONFIG) --extension-dir`
 PHPCDIR=`$(PHPCONFIG) --configure-options | sed -n 's|.*--with-config-file-scan-dir=\([^ ]*\).*|\1|p'`
-MINCRYPT_OBJECTS=../src/mincrypt.o ../src/crc32.o ../src/base64.o
+MINCRYPT_OBJECTS=../src/libmincrypt_la-mincrypt.o ../src/libmincrypt_la-crc32.o ../src/libmincrypt_la-base64.o
 
 EXTRA_DIST = mincrypt-php.c php_mincrypt.h
 
