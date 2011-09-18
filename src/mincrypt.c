@@ -108,8 +108,8 @@ DLLEXPORT int crypt_set_simple_mode(int enable)
 */
 DLLEXPORT void crypt_set_password(char *salt, char *password, int vector_multiplier)
 {
-	uint32_t shift = 0, val = 0, iSalt = 0, initial = 0;
-	uint64_t shifts = 0, initialValue = 0, tmp = 0;
+	uint32_t val = 0, iSalt = 0, initial = 0;
+	uint64_t initialValue = 0;
 	int num = 0, lenSalt, lenPass, i, vector_mult, bits, passSum;
 	char *savedpass;
 
@@ -122,7 +122,7 @@ DLLEXPORT void crypt_set_password(char *salt, char *password, int vector_multipl
 	get_nearest_power_of_two(BUFFER_SIZE, &bits);
 	DPRINTF("Chunk is encoded on %d bits\n", bits);
 
-	while (val = (*salt++))
+	while ((val = *(salt++)) && (salt != NULL))
 		iSalt = pow(val, ++num) * bits;
 
 	DPRINTF("%s: iSalt = 0x%"PRIx32"\n", __FUNCTION__, iSalt);
@@ -130,7 +130,7 @@ DLLEXPORT void crypt_set_password(char *salt, char *password, int vector_multipl
 	num = 0;
 	savedpass = strdup(password);
 	passSum = 0;
-	while (val = *password++) {
+	while ((val = *password++) && (password != NULL)) {
 		passSum += val;
 		initial += (val + iSalt) << ++num;
 	}
@@ -225,11 +225,10 @@ static unsigned char *crypt_process(unsigned char *block, int size, uint32_t crc
 */
 DLLEXPORT unsigned char *crypt_encrypt(unsigned char *block, int size, int id, size_t *new_size)
 {
-	int i;
 	uint32_t crc = 0;
 	unsigned char *out = NULL, *tmp = NULL;
 	unsigned char data[4] = { 0 };
-	int csize = size, start_pos = 0;
+	int csize = size;
 
 	if (_iv == NULL) {
 		fprintf(stderr, "Error: Initialization vectors are not initialized\n");

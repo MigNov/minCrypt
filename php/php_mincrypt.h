@@ -31,8 +31,9 @@ ZEND_END_MODULE_GLOBALS(mincrypt)
 #define MINCRYPT_G(v) (mincrypt_globals.v)
 #endif
 
-#define PHP_MINCRYPT_WORLD_VERSION "0.0.1a"
-#define PHP_MINCRYPT_WORLD_EXTNAME "mincrypt"
+#define PHP_MINCRYPT_WEBSITE		"http://www.migsoft.net/projects/minCrypt"
+#define PHP_MINCRYPT_WORLD_VERSION	"0.0.2"
+#define PHP_MINCRYPT_WORLD_EXTNAME	"mincrypt"
 
 PHP_MINIT_FUNCTION(mincrypt);
 PHP_MSHUTDOWN_FUNCTION(mincrypt);

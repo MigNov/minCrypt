@@ -74,6 +74,9 @@ PHP_MINFO_FUNCTION(mincrypt)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Mincrypt support", "enabled");
 	php_info_print_table_row(2, "Extension version", PHP_MINCRYPT_WORLD_VERSION);
+	php_info_print_table_row(2, "Project's website", PHP_MINCRYPT_WEBSITE);
+	php_info_print_table_row(2, "Author", "Michal Novotny");
+	php_info_print_table_row(2, "Author's website", "http://www.migsoft.net");
 	php_info_print_table_end();
 }
 

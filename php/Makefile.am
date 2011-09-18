@@ -10,9 +10,10 @@ EXTRA_DIST = mincrypt-php.c php_mincrypt.h
 all: build clean-temp
 
 build:
-	$(CC) -Wall -fpic -DCOMPILE_DL_MINCRYPT=1 $(PHPINC) -c -o $(NAME).o mincrypt-php.c
-	$(CC) -Wall -shared $(LIBS) -rdynamic -o $(NAME).so $(NAME).o $(MINCRYPT_OBJECTS)
+	$(CC) -Wall -fPIC -DCOMPILE_DL_MINCRYPT=1 $(PHPINC) -c -o $(NAME).o mincrypt-php.c
+	$(CC) -Wall -fPIC -shared $(LIBS) -rdynamic -o $(NAME).so $(NAME).o $(MINCRYPT_OBJECTS)
 	$(ECHO) "Extension compiled as $(NAME).so"
+	$(ECHO)
 
 install-exec-local:
 	mkdir -p $(DESTDIR)$(PHPEDIR)

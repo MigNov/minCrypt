@@ -71,6 +71,7 @@
 			((uint64_t)var[6] << 8) + (uint64_t)var[7])
 
 /* Function prototypes */
+uint32_t crc32_block(unsigned char *block, uint32_t length, uint64_t initVal);
 unsigned char *base64_encode(const char *in, size_t *size);
 unsigned char *base64_decode(const char *in, size_t *size);
 void crypt_set_password(char *salt, char *password, int vector_multiplier);
