@@ -140,9 +140,9 @@ void MainFrame::OnProcess(wxCommandEvent& WXUNUSED(event))
  	*/
 
 	if (type == 0)
-		rc = crypt_encrypt_file(wxStringChar(infile), wxStringChar(outfile), wxStringChar(saltv), wxStringChar(pwdv), vect_mult);
+		rc = mincrypt_encrypt_file(wxStringChar(infile), wxStringChar(outfile), wxStringChar(saltv), wxStringChar(pwdv), vect_mult);
 	else
-		rc = crypt_decrypt_file(wxStringChar(infile), wxStringChar(outfile), wxStringChar(saltv), wxStringChar(pwdv), vect_mult);
+		rc = mincrypt_decrypt_file(wxStringChar(infile), wxStringChar(outfile), wxStringChar(saltv), wxStringChar(pwdv), vect_mult);
 
 	if (rc != 0)
 		SetStatusText( wxString::Format(_T("File operation returned code %d"), rc) );

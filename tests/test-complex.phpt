@@ -12,6 +12,7 @@
 		echo "ERROR: ".mincrypt_get_last_error();
 
 	mincrypt_reset_id();
+
 	$size = strlen($orig);
 	$in = mincrypt_encrypt($orig, $size);
 	mincrypt_reset_id();
@@ -27,18 +28,22 @@
 	if (!mincrypt_set_password($password, $salt, $mult))
 		echo "ERROR: ".mincrypt_get_last_error();
 
+	mincrypt_reset_last_error();
+
 	$highlevel_ok = false;
 	$highlevel_fail = false;
-	$rc = mincrypt_encrypt_file('test.tgz', 'tmp1');
-	if ($rc == 0) {
-		$rc = mincrypt_decrypt_file('tmp1', 'tmp2');
-		if ($rc == 0)
+	if (mincrypt_encrypt_file('test.tgz', 'tmp1')) {
+		if (mincrypt_decrypt_file('tmp1', 'tmp2'))
 			$highlevel_ok = true;
+		else
+			$highlevel_ok = mincrypt_get_last_error();
 
 		mincrypt_set_password($password2, $salt, $mult);
 		$rc = mincrypt_decrypt_file('tmp1', 'tmp3');
-		$highlevel_fail = ($rc != 0);
-	}	
+		$highlevel_fail = ($rc == -22);
+	}
+	else
+		$highlevel_ok = $highlevel_fail = mincrypt_get_last_error();
 
 	/* Test on file */
 	mincrypt_set_password($password, $salt, $mult);
@@ -72,9 +77,12 @@
 	unlink('tmp2');
 	unlink('tmp3');
 
-	if (!($highlevel_ok && $highlevel_fail && $lowlevel_ok && $lowlevel_fail && $lowlevel_file)) {
-		echo "High-level API test: ".($highlevel_ok ? "Success" : "Failed")."\n";
-		echo "High-level API fail test: ".($highlevel_fail ? "Success" : "Failed")."\n";
+	if ((!($highlevel_ok && $highlevel_fail && $lowlevel_ok && $lowlevel_fail && $lowlevel_file))
+		|| (is_string($highlevel_fail) || is_string($highlevel_ok))){
+		echo "High-level API test: ".($highlevel_ok ?
+			(is_string($highlevel_ok) ? $highlevel_ok : "Success") : "Failed")."\n";
+		echo "High-level API fail test: ".($highlevel_fail ?
+			(is_string($highlevel_fail) ? $highlevel_fail : "Success") : "Failed")."\n";
 		echo "Low-level API test: ".($lowlevel_ok ? "Success" : "Failed")."\n";
 		echo "Low-level API fail test: ".($lowlevel_fail ? "Success" : "Failed")."\n";
 		echo "Low-level file API test: ".($lowlevel_file ? "Success" : "Failed")."\n";

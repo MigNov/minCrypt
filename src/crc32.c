@@ -9,13 +9,13 @@
  */
 
 //#define TEST_CRC
-//#define DEBUG_CRC
+#define DEBUG_CRC
 
 #include "mincrypt.h"
 
 #ifdef DEBUG_CRC
 #define DPRINTF(fmt, args...) \
-do { fprintf(stderr, "crc: " fmt , ##args); } while (0)
+do { fprintf(stderr, "[mincrypt/crc32     ] " fmt , ##args); } while (0)
 #else
 #define DPRINTF(fmt, args...) do {} while(0)
 #endif

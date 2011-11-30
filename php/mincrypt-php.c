@@ -14,7 +14,7 @@
 
 #include "php.h"
 #include "php_ini.h"
-#include "php_mincrypt.h"
+#include "mincrypt-php.h"
 #include "standard/info.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(mincrypt)
@@ -23,6 +23,9 @@ static function_entry mincrypt_functions[] = {
 	PHP_FE(mincrypt_set_password,NULL)
 	PHP_FE(mincrypt_set_encoding_type,NULL)
 	PHP_FE(mincrypt_get_last_error, NULL)
+	PHP_FE(mincrypt_reset_last_error, NULL)
+	PHP_FE(mincrypt_generate_keys, NULL)
+	PHP_FE(mincrypt_read_key, NULL)
 	PHP_FE(mincrypt_reset_id, NULL)
 	PHP_FE(mincrypt_last_size, NULL)
 	PHP_FE(mincrypt_next_chunk_id, NULL)
@@ -82,8 +85,10 @@ PHP_MINFO_FUNCTION(mincrypt)
 
 PHP_MINIT_FUNCTION(mincrypt)
 {
-	REGISTER_LONG_CONSTANT("MINCRYPT_ENCODING_TYPE_BINARY",	ENCODING_TYPE_BINARY, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("MINCRYPT_ENCODING_TYPE_BASE64",	ENCODING_TYPE_BASE64, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("MINCRYPT_ENCODING_TYPE_BINARY",	ENCODING_TYPE_BINARY,	CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("MINCRYPT_ENCODING_TYPE_BASE64",	ENCODING_TYPE_BASE64,	CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("MINCRYPT_KEY_PRIVATE",		FLAG_KEY_PRIVATE,	CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("MINCRYPT_KEY_PUBLIC",		FLAG_KEY_PUBLIC,	CONST_CS | CONST_PERSISTENT);
 
 	return SUCCESS;
 }
@@ -138,6 +143,16 @@ PHP_FUNCTION(mincrypt_get_last_error)
 	RETURN_STRING(MINCRYPT_G (last_error), 1);
 }
 
+PHP_FUNCTION(mincrypt_reset_last_error)
+{
+	if (MINCRYPT_G (last_error) == NULL) RETURN_FALSE;
+
+	efree(MINCRYPT_G (last_error));
+	MINCRYPT_G (last_error) = NULL;
+
+	RETURN_TRUE;
+}
+
 /*
 	Function name:		mincrypt_reset_id
 	Since version:		0.0.1
@@ -189,7 +204,7 @@ PHP_FUNCTION(mincrypt_set_password)
 	int salt_len, pwd_len, vect_multiplier = 64;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|l", &pwd,&pwd_len,&salt,&salt_len,&vect_multiplier) == FAILURE) {
-        RETURN_FALSE;
+		RETURN_FALSE;
 	}
 
 	if (vect_multiplier < 32) {
@@ -197,10 +212,31 @@ PHP_FUNCTION(mincrypt_set_password)
 		RETURN_FALSE;
 	}
 	
-	crypt_set_password(salt, pwd, vect_multiplier);
+	mincrypt_set_password(salt, pwd, vect_multiplier);
 	next_id(1);
 	MINCRYPT_G (vector_set) = 1;
 	
+	RETURN_TRUE;
+}
+
+PHP_FUNCTION(mincrypt_generate_keys)
+{
+	int keysize = 1024;
+	char *pwd, *salt, *k, *kp;
+	int pwd_len, salt_len, k_len, kp_len;
+	int ret;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lssss", &keysize, &pwd,&pwd_len,&salt,&salt_len,&k,&k_len,&kp,&kp_len) == FAILURE) {
+		set_error("Invalid arguments");
+		RETURN_FALSE;
+	}
+
+	ret = mincrypt_generate_keys(keysize, salt, pwd, k, kp);
+	if (ret != 0) {
+		set_error("Unable to generate keys.");
+		RETURN_FALSE;
+	}
+
 	RETURN_TRUE;
 }
 
@@ -219,7 +255,7 @@ PHP_FUNCTION(mincrypt_set_encoding_type)
 		RETURN_FALSE;
 
 	MINCRYPT_G(type) = type;
-	if (crypt_set_encoding_type(type) != 0) {
+	if (mincrypt_set_encoding_type(type) != 0) {
 		set_error("Invalid type");
 		RETURN_FALSE;
 	}
@@ -257,7 +293,7 @@ PHP_FUNCTION(mincrypt_encrypt)
 		block_size = strlen( (char *)block );
 
 	block_out = emalloc( (block_size + 16) * sizeof(unsigned char) );
-	block_out = (unsigned char *)crypt_encrypt((unsigned char *)block, block_size + 1, next_id(0), &rc);
+	block_out = (unsigned char *)mincrypt_encrypt((unsigned char *)block, block_size + 1, next_id(0), &rc);
 	if (rc <= 0) {
 		efree(block_out);
 		set_error("Internal error!");
@@ -321,9 +357,9 @@ PHP_FUNCTION(mincrypt_decrypt)
 	}
 
 	if (flags & ENCODING_TYPE_BASE64)
-		block_out = (unsigned char *)crypt_decrypt((unsigned char *)tmp, rc - 1, next_id(0), &rc, NULL);
+		block_out = (unsigned char *)mincrypt_decrypt((unsigned char *)tmp, rc - 1, next_id(0), &rc, NULL);
 	else {
-		block_out = (unsigned char *)crypt_decrypt((unsigned char *)block, block_size - 1, next_id(0), &rc, NULL);
+		block_out = (unsigned char *)mincrypt_decrypt((unsigned char *)block, block_size - 1, next_id(0), &rc, NULL);
 		rc--;
 	}
 
@@ -348,8 +384,9 @@ PHP_FUNCTION(mincrypt_decrypt)
 	Function name:			mincrypt_encrypt_file
 	Since version:			0.0.1
 	Description:			Function for high-level encryption of the whole file. You have to have the IVs set using mincrypt_set_password() call already
-	Arguments:				@file1 [string]: input (original) file
-	Returns:				0 for no error or error code. mincrypt_get_last_error() could be used to get the error string representation if not 0
+	Arguments:			@file1 [string]: input (original) file
+					@file2 [string]: output (encrypted) file
+	Returns:			0 for no error or error code. mincrypt_get_last_error() could be used to get the error string representation if not 0
 */
 PHP_FUNCTION(mincrypt_encrypt_file)
 {
@@ -362,10 +399,11 @@ PHP_FUNCTION(mincrypt_encrypt_file)
 	}
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &file1,&file1_len,&file2,&file2_len) == FAILURE) {
-        RETURN_FALSE;
+		set_error("Invalid arguments");
+		RETURN_FALSE;
 	}
 	
-	rc = crypt_encrypt_file(file1, file2, NULL, NULL, 0);
+	rc = mincrypt_encrypt_file(file1, file2, NULL, NULL, 0);
 	switch (rc) {
 		case -EPERM: set_error("Cannot access file");
 					 break;
@@ -375,16 +413,20 @@ PHP_FUNCTION(mincrypt_encrypt_file)
 					 break;
 	}
 
-	RETURN_LONG( rc );
+	if (rc == 0) {
+		RETURN_TRUE;
+	}
+	else
+		RETURN_LONG( rc );
 }
 
 /*
 	Function name:			mincrypt_decrypt_file
 	Since version:			0.0.1
 	Description:			Function for high-level decryption of the whole file. You have to have the IVs set using mincrypt_set_password() call already
-	Arguments:				@file1 [string]: input (encrypted) file
-							@file2 [string]: output (decrypted) file
-	Returns:				0 for no error or error code. mincrypt_get_last_error() could be used to get the error string representation if not 0
+	Arguments:			@file1 [string]: input (encrypted) file
+					@file2 [string]: output (decrypted) file
+	Returns:			0 for no error or error code. mincrypt_get_last_error() could be used to get the error string representation if not 0
 */
 PHP_FUNCTION(mincrypt_decrypt_file)
 {
@@ -397,10 +439,11 @@ PHP_FUNCTION(mincrypt_decrypt_file)
 	}
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &file1,&file1_len,&file2,&file2_len) == FAILURE) {
-        RETURN_FALSE;
+		set_error("Invalid arguments");
+		RETURN_FALSE;
 	}
 	
-	rc = crypt_decrypt_file(file1, file2, NULL, NULL, 0);
+	rc = mincrypt_decrypt_file(file1, file2, NULL, NULL, 0);
 	switch (rc) {
 		case -EPERM: set_error("Cannot access file");
 					 break;
@@ -409,7 +452,36 @@ PHP_FUNCTION(mincrypt_decrypt_file)
 		case -EINVAL:set_error("Decryption failed");
 					 break;
 	}
-	
-	RETURN_LONG( rc );
+
+	if (rc == 0) {
+		RETURN_TRUE;
+	}
+	else
+		RETURN_LONG( rc );
+}
+
+/*
+	Function name:			mincrypt_read_key
+	Since version:			0.0.3
+	Description:			Function is used to set the initialization vectors used for asymmetric encryption/decryption
+	Arguments:			@keyfile [string]: file with the mincrypt key
+	Returns:			MINCRYPT_KEY_PRIVATE if key is private, MINCRYPT_KEY_PUBLIC if key is public, FALSE on error
+*/
+PHP_FUNCTION(mincrypt_read_key)
+{
+	char *keyfile;
+	int keyfile_len, ret, isPrivate;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &keyfile,&keyfile_len) == FAILURE) {
+		set_error("Invalid arguments");
+		RETURN_FALSE;
+	}
+
+	if ((ret = mincrypt_read_key_file(keyfile, &isPrivate)) != 0) {
+		set_error("Cannot read key file");
+		RETURN_FALSE;
+	}
+
+	RETURN_LONG( isPrivate ? FLAG_KEY_PRIVATE : FLAG_KEY_PUBLIC );
 }
 

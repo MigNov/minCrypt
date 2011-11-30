@@ -32,11 +32,11 @@
  * @ingroup base64
  */
 
-//define DEBUG_BASE64
+#define DEBUG_BASE64
 
 #ifdef DEBUG_BASE64
 #define DPRINTF(fmt, ...) \
-do { fprintf(stderr, "base64: " fmt , ## __VA_ARGS__); } while (0)
+do { fprintf(stderr, "[mincrypt/base64    ] " fmt , ## __VA_ARGS__); } while (0)
 #else
 #define DPRINTF(fmt, ...) \
 do {} while(0)
@@ -216,7 +216,7 @@ size_t base64_decoded_size(size_t len)
  *
  * @ingroup base64
  */
-void base64_encode_binary(char *out, const unsigned char *in, size_t len)
+void base64_encode_binary(unsigned char *out, unsigned char *in, size_t len)
 {
         int size;
         size_t i = 0;
