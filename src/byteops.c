@@ -38,7 +38,8 @@ uint64_t bits_to_num(char *bits, int num)
 		append_bits = num - strlen(bits);
 		DPRINTF("%s: append_bits is %d\n", __FUNCTION__, append_bits);
 		if (append_bits > 0) {
-			pbits = (char *)malloc( (num+1) * sizeof(char) );
+			pbits = (char *)malloc( (num+2) * sizeof(char) );
+			memset(pbits, 0, num + 2);
 			DPRINTF("%s: Allocating %d bytes\n", __FUNCTION__, num);
 			strcat(pbits, bits);
 			for (i = 0; i < append_bits; i++)
@@ -71,11 +72,16 @@ char *num_to_bits(uint64_t code, int *out_bits)
 		tmpcode = pow(2, i++);
 
 	num_bits = i - 1;
+	DPRINTF("%s: %d bits\n", __FUNCTION__, num_bits);
 
 	if (out_bits != NULL)
 		*out_bits = num_bits;
 
 	bits = (char *)malloc((num_bits + 2) * sizeof(char));
+	if (bits == NULL) {
+		DPRINTF("%s: Cannot allocate memory\n", __FUNCTION__);
+		return NULL;
+	}
 	memset(bits, 0, num_bits + 1);
 	for (i = num_bits - 1; i >= 0; i--)
 		strcat(bits, (code & (uint64_t)pow(2, i)) ? "1" : "0");

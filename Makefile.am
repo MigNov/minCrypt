@@ -5,6 +5,9 @@ SUBDIRS = src php tests windows docs examples tools
 
 EXTRA_DIST = LICENSE html
 
+test:
+	cd tests && ./runtests.sh
+
 rpm:   dist-xz
 	$(CP) $(PACKAGE_NAME)-$(VERSION).tar.xz $(SOURCEDIR)/$(PACKAGE_NAME)-$(VERSION).tar.xz
 	$(RPMBUILD) -bb $(PACKAGE_NAME).spec

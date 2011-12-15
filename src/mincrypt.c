@@ -112,9 +112,15 @@ void write_header_footer(int fd, int isFooter, int private)
 {
 	char tmp[1024] = { 0 };
 
-	snprintf(tmp, sizeof(tmp), " --- %sMINCRYPT %s KEY %s ---\n",
+	snprintf(tmp, sizeof(tmp), " --- %sMINCRYPT %s KEY %s FOR %d-BIT KEYLENGTH ---\n",
 			isFooter ? "END OF " : "",
-			private ? "PRIVATE" : "PUBLIC",	PACKAGE_VERSION);
+			private ? "PRIVATE" : "PUBLIC",	PACKAGE_VERSION,
+			#ifdef USE_64BIT_NUMBERS
+			64
+			#else
+			32
+			#endif
+			);
 
 	write(fd, tmp, strlen(tmp));
 }
@@ -137,7 +143,7 @@ void write_data(int fd, unsigned char *data, int num)
 	}
 }
 
-int read_key_data(int fd, int bits)
+int read_key_data(int fd, int bits, int isPrivate)
 {
 	int i, in, c, num;
 	char buf[10] = { 0 };
@@ -164,8 +170,18 @@ int read_key_data(int fd, int bits)
 				_iva[i++] = val;
 				_ival += val;
 			}
-			else
-				_ivn[in++] = val;
+			else {
+				if (!isPrivate)
+					_ivn[in++] = val;
+				else {
+					uint16_t p, q;
+
+					p = (val >> 16);
+					q = (val % 65536);
+
+					get_decryption_value(p, q, 0, &_ivn[in++]);
+				}
+			}
 
 			num++;
 		}
@@ -199,9 +215,9 @@ long get_version(char *verstr)
 	return ((major << 16) + (minor << 8) + (micro));
 }
 
-int read_header_footer(int fd, int isFooter, int *isPrivate)
+int read_header_footer(int fd, int isFooter, int *isPrivate, int *bits)
 {
-	int c;
+	int c, bitlen;
 	char a[2] = { 0 };
 	char tmp[128] = { 0 };
 	tTokenizer t;
@@ -218,10 +234,19 @@ int read_header_footer(int fd, int isFooter, int *isPrivate)
 		ret = -EINVAL;
 
 	if (isPrivate != NULL)
-		*isPrivate = (strcmp(t.tokens[ t.numTokens - 4 ], "PRIVATE") == 0) ? 1 : 0;
+		*isPrivate = (strcmp(t.tokens[2], "PRIVATE") == 0) ? 1 : 0;
 
-	if (get_version(PACKAGE_VERSION) < get_version(t.tokens[ t.numTokens - 2 ]))
+	if (get_version(PACKAGE_VERSION) < get_version(t.tokens[4]))
 		ret = -EINVAL;
+
+	bitlen = atoi(t.tokens[6]);
+#ifndef USE_64BIT_NUMBERS
+	if (bitlen != 32)
+		ret = -EINVAL;
+#endif
+
+	if (bits != NULL)
+		*bits = bitlen;
 
 	free_tokens(t);
 
@@ -253,6 +278,8 @@ DLLEXPORT int mincrypt_read_key_file(char *keyfile, int *oIsPrivate)
 	int fd;
 	int isPrivate;
 	int fileSize;
+	int bits;
+	int ret = 0;
 
 	fd = open(keyfile, O_RDONLY);
 	if (fd < 0)
@@ -261,13 +288,15 @@ DLLEXPORT int mincrypt_read_key_file(char *keyfile, int *oIsPrivate)
 	fileSize = (int)lseek(fd, 0, SEEK_END);
 	lseek(fd, 0, SEEK_SET);
 
-	if (read_header_footer(fd, 0, &isPrivate) != 0)
+	if (read_header_footer(fd, 0, &isPrivate, &bits) != 0) {
+		close(fd);
 		return -EINVAL;
+	}
 
 	if (oIsPrivate != NULL)
 		*oIsPrivate = isPrivate;
 
-        _avector_size = ((fileSize - (34 + 41)) / 9) / 2;
+        _avector_size = ((fileSize - (56 + 59)) / 9) / 2;
 
 	if (_iva != NULL)
 		_iva = realloc( _iva, _avector_size * sizeof(uint32_t) );
@@ -282,15 +311,21 @@ DLLEXPORT int mincrypt_read_key_file(char *keyfile, int *oIsPrivate)
 	if ((_iva == NULL) || (_ivn == NULL)) {
 		free(_iva);
 		free(_ivn);
-		return -ENOMEM;
+		ret = -ENOMEM;
 	}
-
-	read_key_data(fd, 32);
+	else
+	if (read_key_data(fd, bits, isPrivate) != 0)
+		ret = -EINVAL;
 
 	close(fd);
 
+	if (ret != 0) {
+		free(_ivn);
+		free(_iva);
+	}
+
 	type_approach = APPROACH_ASYMMETRIC;
-	return 0;
+	return ret;
 }
 
 /*
@@ -320,16 +355,17 @@ DLLEXPORT int mincrypt_generate_keys(int bits, char *salt, char *password, char 
 	unsigned char *data_pub = NULL;
 	unsigned char *data_pk = NULL;
 	unsigned char u64s[8];
+	unsigned char u32s[4];
 	tPrimes primes;
 	int ret = -EINVAL;
-	int minN = 0;
 	int ITER_MAX = 4;
 	int est_size = 0;
 	uint64_t testVal = 65;
+	uint64_t p = 0, q = 0;
 
 	srand( time(NULL) / bits );
 
-	est_size = 2 * ((ITER_MAX * (bits / 8)) * 4);
+	est_size = 4 * ((ITER_MAX * (bits / 8)) * 4);
 
 	data_pub = (unsigned char *)malloc( est_size * sizeof(unsigned char) );
 	memset(data_pub, 0, bits);
@@ -347,6 +383,8 @@ DLLEXPORT int mincrypt_generate_keys(int bits, char *salt, char *password, char 
 		DPRINTF("%s: Iteration #%d\n", __FUNCTION__, len+1);
 		bit = rand() % 2;
 		uSalt = find_nearest_prime_number(tmp, bit ? GET_NEAREST_BIGGER : GET_NEAREST_SMALLER);
+
+		DPRINTF("%s: uSalt number is %"PRIi64"\n", __FUNCTION__, uSalt);
 
 		kbits = num_to_bits( tmp, &num );
 		DPRINTF("%s: Generated salt value of 0x%"PRIx64" (%d bits)\n", __FUNCTION__, tmp, num);
@@ -371,6 +409,7 @@ DLLEXPORT int mincrypt_generate_keys(int bits, char *salt, char *password, char 
 		free(kbits);
 
 		tmp = bits_to_num(obits, num);
+		free(obits);
 		DPRINTF("%s: tmp value is 0x%"PRIx64" (%d bits)\n", __FUNCTION__, tmp, num);
 
 		primes = get_prime_elements(tmp);
@@ -391,9 +430,10 @@ DLLEXPORT int mincrypt_generate_keys(int bits, char *salt, char *password, char 
 		while (len2 < (bits / 8)) {
 			iter2++;
 			bit = rand() % 2;
-			if (get_random_values( prime_sum % time(NULL), bits, uPassword - iter2,
-				uSalt / (iter2 + iter), &e, &d, &n, bit) < 0) {
-				DPRINTF("%s: Cannot get the random values for n and related stuff\n", __FUNCTION__);
+			p = uPassword - iter2;
+			q = uSalt / (iter2 + iter);
+			if (get_random_values( prime_sum % time(NULL), bits, &p, &q, &e, &d, &n, bit) < 0) {
+				DPRINTF("%s: Cannot get the random values based on the input data\n", __FUNCTION__);
 				//goto cleanup;
 				continue;
 			}
@@ -407,30 +447,28 @@ DLLEXPORT int mincrypt_generate_keys(int bits, char *salt, char *password, char 
 			}
 
 #ifdef USE_64BIT_NUMBERS
-			minN = 0;
+			#error "Keys with 64-bit numbers are not supported yet"
 #else
-			minN = 4;
-#endif
-
 			/* Write n to public key */
-			UINT64STR(u64s, n);
-			for (i = minN; i < 8; i++)
-				data_pub[ui++] = u64s[i];
+			UINT32STR(u32s, (uint32_t)n);
+			for (i = 0; i < 4; i++)
+				data_pub[ui++] = u32s[i];
 
-			/* Write n to public key */
-			UINT64STR(u64s, n);
-			for (i = minN; i < 8; i++)
-				data_pk[pi++] = u64s[i];
+			/* Write encoded prime components to private key */
+			UINT32STR(u32s, (uint32_t)(((uint16_t)p << 16) + ((uint16_t)q)) );
+			for (i = 0; i < 4; i++)
+				data_pk[pi++] = u32s[i];
 
 			/* Write e to public key */
-			UINT64STR(u64s, e);
-			for (i = minN; i < 8; i++)
-				data_pub[ui++] = u64s[i];
+			UINT32STR(u32s, (uint32_t)e);
+			for (i = 0; i < 4; i++)
+				data_pub[ui++] = u32s[i];
 
 			/* Write d to private key */
-			UINT64STR(u64s, d);
-			for (i = minN; i < 8; i++)
-				data_pk[pi++] = u64s[i];
+			UINT32STR(u32s, (uint32_t)d);
+			for (i = 0; i < 4; i++)
+				data_pk[pi++] = u32s[i];
+#endif
 
 			len2++;
 
@@ -1051,7 +1089,7 @@ DLLEXPORT int mincrypt_decrypt_file(char *filename1, char *filename2, char *salt
 	unsigned char buf[BUFFER_SIZE_BASE64+17+3 /* strlen(SIGNATURE) */] = { 0 };
 	char *outbuf;
 	int fd, fdOut, rc, rsize, id, ret = 0, to_read = BUFFER_SIZE_BASE64 + 17 + strlen(SIGNATURE);
-	uint64_t already_read = 0;
+	uint64_t already_read = 0, total = 0;
 
 	if ((salt != NULL) && (password != NULL))
 		mincrypt_set_password(salt, password, vector_multiplier);
@@ -1101,7 +1139,7 @@ DLLEXPORT int mincrypt_decrypt_file(char *filename1, char *filename2, char *salt
 		}
 
 		if (rc == -1) {
-			DPRINTF("An error occured while decrypting input. Please check your password.\n");
+			DPRINTF("An error occured while decrypting input. Please check your salt/password and/or key if any used.\n");
 			free(outbuf);
 			close(fdOut);
 			fdOut = -1;
@@ -1112,12 +1150,19 @@ DLLEXPORT int mincrypt_decrypt_file(char *filename1, char *filename2, char *salt
 
 		write(fdOut, outbuf, rc);
 		free(outbuf);
+
+		total += rc;
 	}
 
 	if (fd != -1)
 		close(fd);
 	if (fdOut != -1)
 		close(fdOut);
+
+	if (total == 0) {
+		ret = -EINVAL;
+		unlink(filename2);
+	}
 
 	DPRINTF("%s: Decryption done with code %d\n", __FUNCTION__, ret);
 	return ret;

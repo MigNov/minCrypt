@@ -22,17 +22,49 @@ do { fprintf(stderr, "[mincrypt/asymmetric] " fmt , ##args); } while (0)
 #define DPRINTF(fmt, args...) do {} while(0)
 #endif
 
-int get_random_values(uint64_t seed, int size, uint64_t p, uint64_t q, uint64_t *oe, uint64_t *od, uint64_t *on, int flags)
+uint64_t get_decryption_value(uint64_t p, uint64_t q, uint64_t e, uint64_t *on)
+{
+	uint64_t n, eu, d, i;
+
+	n = p * q;
+	eu = (p - 1) * (q - 1);
+
+	DPRINTF("%s: p = %"PRIu64", q = %"PRIu64", n = %"PRIu64", eu = %"PRIu64"\n",
+			__FUNCTION__, p, q, n, eu);
+
+	d = 0;
+	if (e > 0) {
+		for (i = 0; i < (int)n; i++) {
+			if ((i * (int)e) % eu == 1.) {
+				d = i;
+				break;
+			}
+		}
+	}
+
+	if (on != NULL)
+		*on = n;
+
+	return d;
+}
+
+int get_random_values(uint64_t seed, int size, uint64_t *p, uint64_t *q, uint64_t *oe, uint64_t *od, uint64_t *on, int flags)
 {
 	long modtime = (long)time(NULL);
-	uint64_t d, e, n, i, eu, xp, xq, xseed;
+	uint64_t d, e, n, xp, xq, xseed;
 
-	DPRINTF("%s: p = %"PRIu64", q = %"PRIu64"\n", __FUNCTION__, p, q);
+	if ((p == NULL) || (q == NULL)) {
+		DPRINTF("%s: Primes cannot be null\n", __FUNCTION__);
+		return -EINVAL;
+	}
+
+	e = n = 0;
+	DPRINTF("%s: p = %"PRIu64", q = %"PRIu64"\n", __FUNCTION__, *p, *q);
 
 	DPRINTF("%s: mod time = %ld, size = %d\n", __FUNCTION__, modtime, size);
 
-	xp = (uint64_t)((p / (uint64_t)modtime) % (uint64_t)size);
-	xq = (q / (uint64_t)modtime) % (uint64_t)size;
+	xp = (uint64_t)((*p / (uint64_t)modtime) % (uint64_t)size);
+	xq = (*q / (uint64_t)modtime) % (uint64_t)size;
 
 	xp = find_nearest_prime_number(xp, flags);
 	if (xp == (uint64_t)-1) {
@@ -54,30 +86,22 @@ int get_random_values(uint64_t seed, int size, uint64_t p, uint64_t q, uint64_t 
 
 	DPRINTF("%s: x/p = %"PRIu64", x/q = %"PRIu64"\n", __FUNCTION__, xp, xq);
 
-	n = xp * xq;
-	eu = (xp - 1) * (xq - 1);
-
-	DPRINTF("%s: n = %"PRIu64", eu = %"PRIu64"\n", __FUNCTION__, n, eu);
-
-	d = 0;
 	xseed = (seed == 0) ? time(NULL) : seed % time(NULL);
 
+	n = xp * xq;
 	srand( xseed );
-	e = find_nearest_prime_number( rand() % eu, flags );
+	e = find_nearest_prime_number( rand() % n, flags );
 	if (e == (uint64_t)-1) {
 		DPRINTF("%s: Invalid prime number for e\n", __FUNCTION__);
 		return -EINVAL;
 	}
 
-	for (i = 0; i < (int)n; i++) {
-		if ((i * (int)e) % eu == 1.) {
-			d = i;
-			break;
-		}
-	}
+	d = get_decryption_value(xp, xq, e, &n);
 
-	DPRINTF("%s: seed = %"PRIu64", d = %"PRIu64", e = %"PRIu64"\n", __FUNCTION__, xseed, d, e);
 	DPRINTF("%s: int seed = %d, int d = %d, int e = %d\n", __FUNCTION__, (int)xseed, (int)d, (int)e);
+
+	*p = xp;
+	*q = xq;
 
 	if (oe != NULL)
 		*oe = e;
