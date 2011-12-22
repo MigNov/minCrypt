@@ -14,7 +14,7 @@
 
 #ifdef DEBUG_MINCRYPT_MAIN
 #define DPRINTF(fmt, ...) \
-do { fprintf(stderr, "[mincrypt/main      ] " fmt , ## __VA_ARGS__); } while (0)
+do { fprintf(stderr, "[mincrypt/main        ] " fmt , ## __VA_ARGS__); } while (0)
 #else
 #define DPRINTF(fmt, ...) \
 do {} while(0)

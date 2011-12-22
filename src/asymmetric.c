@@ -17,7 +17,7 @@
 
 #ifdef DEBUG_ASYMMETRIC
 #define DPRINTF(fmt, args...) \
-do { fprintf(stderr, "[mincrypt/asymmetric] " fmt , ##args); } while (0)
+do { fprintf(stderr, "[mincrypt/asymmetric  ] " fmt , ##args); } while (0)
 #else
 #define DPRINTF(fmt, args...) do {} while(0)
 #endif

@@ -15,7 +15,7 @@
 
 #ifdef DEBUG_CRC
 #define DPRINTF(fmt, args...) \
-do { fprintf(stderr, "[mincrypt/crc32     ] " fmt , ##args); } while (0)
+do { fprintf(stderr, "[mincrypt/crc32       ] " fmt , ##args); } while (0)
 #else
 #define DPRINTF(fmt, args...) do {} while(0)
 #endif
@@ -52,7 +52,7 @@ uint32_t crc32_block(unsigned char *block, uint32_t length, uint64_t initVal)
 	register unsigned long crc;
 	unsigned long i;
 
-	DPRINTF("Calculating CRC for 0x%" PRIx32 " bytes, init CRC value is 0x%" PRIx32 "\n", length, initVal);
+	DPRINTF("Calculating CRC for 0x%" PRIx32 " bytes, init CRC value is 0x%" PRIx64 "\n", length, initVal);
 
 	if (!crc_haveTab)
 		crc32_gentab();
@@ -76,11 +76,11 @@ uint32_t crc32_file(char *filename, int chunkSize)
         if (chunkSize < 0) {
 		size = lseek(fd, 0, SEEK_END);
 		lseek(fd, 0, SEEK_SET);
-		DPRINTF("Got %s size: 0x%" PRIx32" bytes\n", filename, size);
+		DPRINTF("Got %s size: 0x%lx bytes\n", filename, size);
 	}
 	else {
 		size = chunkSize;
-		DPRINTF("Getting %s CRC by 0x%"PRIx32" bytes\n", filename, size);
+		DPRINTF("Getting %s CRC by 0x%lx bytes\n", filename, size);
 	}
 
 	data = malloc( (size + 1) * sizeof(unsigned char) );

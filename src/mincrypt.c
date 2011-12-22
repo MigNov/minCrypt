@@ -24,7 +24,7 @@
 
 #ifdef DEBUG_MINCRYPT
 #define DPRINTF(fmt, ...) \
-do { fprintf(stderr, "[mincrypt/corelib   ] " fmt , ## __VA_ARGS__); } while (0)
+do { fprintf(stderr, "[mincrypt/corelib     ] " fmt , ## __VA_ARGS__); } while (0)
 #else
 #define DPRINTF(fmt, ...) \
 do {} while(0)
@@ -150,6 +150,7 @@ int read_key_data(int fd, int bits, int isPrivate)
 	char tmp[16] = { 0 };
 	char *endptr;
 	uint32_t val;
+	uint64_t val64;
 
 	if (bits != 32)
 		return -EINVAL;
@@ -179,7 +180,9 @@ int read_key_data(int fd, int bits, int isPrivate)
 					p = (val >> 16);
 					q = (val % 65536);
 
-					get_decryption_value(p, q, 0, &_ivn[in++]);
+					get_decryption_value(p, q, 0, &val64);
+
+					_ivn[in++] = (uint32_t)val64;
 				}
 			}
 
@@ -354,7 +357,6 @@ DLLEXPORT int mincrypt_generate_keys(int bits, char *salt, char *password, char 
 	char *obits = NULL;
 	unsigned char *data_pub = NULL;
 	unsigned char *data_pk = NULL;
-	unsigned char u64s[8];
 	unsigned char u32s[4];
 	tPrimes primes;
 	int ret = -EINVAL;
@@ -532,7 +534,7 @@ DLLEXPORT void mincrypt_dump_vectors(char *dump_file)
 
 	fd = open(dump_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
-		return -errno;
+		return;
 
 	snprintf(data, sizeof(data), "--- MINCRYPT %s DUMP DATA ---\n\n", PACKAGE_VERSION);
 	write(fd, data, strlen(data));
@@ -721,7 +723,7 @@ static unsigned char *mincrypt_process(unsigned char *block, int size, int decry
 	memset(out, 0, size);
 
 	if ((type_approach == APPROACH_ASYMMETRIC) && decrypt) {
-		shiftByte = asymmetric_decrypt_u64(abShift, (uint64_t)_iva[id % _avector_size], (uint64_t)_ivn[id % _avector_size]);
+		shiftByte = asymmetric_decrypt_u64((uint64_t)abShift, (uint64_t)_iva[id % _avector_size], (uint64_t)_ivn[id % _avector_size]);
 	}
 	else
 	if ((type_approach == APPROACH_ASYMMETRIC) && !decrypt) {
@@ -789,7 +791,7 @@ DLLEXPORT unsigned char *mincrypt_encrypt(unsigned char *block, size_t size, int
 		tmp2 = (unsigned char *)base64_encode( (const char *)tmp, &size);
 		free(tmp);
 
-		DPRINTF("%s: Encoded size is %d bytes\n", __FUNCTION__, size);
+		DPRINTF("%s: Encoded size is %ld bytes\n", __FUNCTION__, (unsigned long)size);
 
 		siglen = strlen(SIGNATURE);
 		csize = size + 17 + siglen;
@@ -806,8 +808,8 @@ DLLEXPORT unsigned char *mincrypt_encrypt(unsigned char *block, size_t size, int
                                 __FUNCTION__, orig_size, out[1+siglen], out[2+siglen], out[3+siglen], out[4+siglen]);
                 UINT32STR(data, (uint32_t)size);
                 memcpy(out+siglen+5, data, 4);
-                DPRINTF("%s: Saving new size (%d) to chunk positions 5 - 8 after signature = { %02x, %02x, %02x, %02x }\n",
-                                __FUNCTION__, size, out[5+siglen], out[6+siglen], out[7+siglen], out[8+siglen]);
+                DPRINTF("%s: Saving new size (%ld) to chunk positions 5 - 8 after signature = { %02x, %02x, %02x, %02x }\n",
+                                __FUNCTION__, (unsigned long)size, out[5+siglen], out[6+siglen], out[7+siglen], out[8+siglen]);
 		UINT32STR(data, (uint32_t)crc);
 		memcpy(out+siglen+9, data, 4);
 		DPRINTF("%s: Saving CRC (0x%"PRIx32") to chunk positions 9 - 12 after signature = { %02x, %02x, %02x, %02x }\n",
@@ -835,8 +837,8 @@ DLLEXPORT unsigned char *mincrypt_encrypt(unsigned char *block, size_t size, int
 		DPRINTF("%s: Saving out_type 0x%02x to chunk position 0\n", __FUNCTION__, out_type);
 		UINT32STR(data, (uint32_t)size);
 		memcpy(out+siglen+1, data, 4);
-		DPRINTF("%s: Saving original size (%d) to chunk positions 1 - 4 after signature = { %02x, %02x, %02x, %02x }\n",
-				__FUNCTION__, size, out[1+siglen], out[2+siglen], out[3+siglen], out[4+siglen]);
+		DPRINTF("%s: Saving original size (%ld) to chunk positions 1 - 4 after signature = { %02x, %02x, %02x, %02x }\n",
+				__FUNCTION__, (unsigned long)size, out[1+siglen], out[2+siglen], out[3+siglen], out[4+siglen]);
 		DPRINTF("%s: Leaving positions 5 to 8 after signature empty since they are reserved\n", __FUNCTION__);
 		UINT32STR(data, (uint32_t)crc);
 		memcpy(out+siglen+9, data, 4);
@@ -855,7 +857,7 @@ DLLEXPORT unsigned char *mincrypt_encrypt(unsigned char *block, size_t size, int
 			DPRINTF("%s: Leaving positions 13 to 17 empty since they are reserved\n", __FUNCTION__);
 		}
 
-		DPRINTF("%s: Saving %d bytes to the end of the stream\n", __FUNCTION__, size);
+		DPRINTF("%s: Saving %ld bytes to the end of the stream\n", __FUNCTION__, (unsigned long)size);
 		memcpy(out+siglen+17, tmp, size);
 
 		free(tmp);
@@ -921,7 +923,7 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 	out_type = block[siglen+0];
 
 	DPRINTF("%s: Found type 0x%02x [%s]\n", __FUNCTION__, out_type, (out_type == ENCODING_TYPE_BASE64) ? "base64" : "binary" );
-	DPRINTF("%s: Input size is %d\n", __FUNCTION__, size);
+	DPRINTF("%s: Input size is %ld\n", __FUNCTION__, (unsigned long)size);
 
 	data[0] = block[siglen+1];
 	data[1] = block[siglen+2];
@@ -935,7 +937,7 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 	data[2] = block[siglen+7];
 	data[3] = block[siglen+8];
 	enc_size = GETUINT32(data);
-	DPRINTF("%s: Encoded chunk size is %d bytes\n", __FUNCTION__, size);
+	DPRINTF("%s: Encoded chunk size is %ld bytes\n", __FUNCTION__, (unsigned long)size);
 
 	data[0] = block[siglen+9];
 	data[1] = block[siglen+10];
@@ -955,7 +957,7 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 		DPRINTF("%s: No asymmetric block shift value set for decryption. Asymmetric approach not used\n", __FUNCTION__);
 
 	if (out_type == ENCODING_TYPE_BINARY) {
-		out = mincrypt_process(block+17+siglen, orig_size, 1, old_crc, id, abShift);
+		out = mincrypt_process(block+17+siglen, orig_size, 1, old_crc, id, &abShift);
 		if (out == NULL)
 			return NULL;
 
@@ -968,7 +970,7 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 		tmp = (unsigned char *)base64_decode( (const char *)block+17+siglen, &size);
 		tmp[ orig_size ] = 0;
 
-		out = mincrypt_process(tmp, orig_size, 1, old_crc, id, abShift);
+		out = mincrypt_process(tmp, orig_size, 1, old_crc, id, &abShift);
 		if (out == NULL)
 			return NULL;
 
@@ -1018,8 +1020,7 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 DLLEXPORT int mincrypt_encrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier)
 {
 	unsigned char buf[BUFFER_SIZE] = { 0 };
-	char *outbuf;
-	char a[2];
+	unsigned char *outbuf;
 	int fd, fdOut, rc, id, ret = 0, errno_saved;
 
 	if ((salt != NULL) && (password != NULL))

@@ -14,7 +14,7 @@
 
 #ifdef DEBUG_BYTEOPS
 #define DPRINTF(fmt, args...) \
-do { fprintf(stderr, "[mincrypt/byteops   ] " fmt , ##args); } while (0)
+do { fprintf(stderr, "[mincrypt/byteops     ] " fmt , ##args); } while (0)
 #else
 #define DPRINTF(fmt, args...) do {} while(0)
 #endif
@@ -49,7 +49,7 @@ uint64_t bits_to_num(char *bits, int num)
 	else
 		pbits = strdup(bits);
 
-	DPRINTF("%s: pBits set to '%s' (%d bits)\n", __FUNCTION__, pbits, strlen(pbits));
+	DPRINTF("%s: pBits set to '%s' (%ld bits)\n", __FUNCTION__, pbits, (unsigned long)strlen(pbits));
 
 	for (i = num; i > 0; i--) {
 		if (pbits[i-1] == '1')

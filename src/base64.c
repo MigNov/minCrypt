@@ -36,7 +36,7 @@
 
 #ifdef DEBUG_BASE64
 #define DPRINTF(fmt, ...) \
-do { fprintf(stderr, "[mincrypt/base64    ] " fmt , ## __VA_ARGS__); } while (0)
+do { fprintf(stderr, "[mincrypt/base64      ] " fmt , ## __VA_ARGS__); } while (0)
 #else
 #define DPRINTF(fmt, ...) \
 do {} while(0)
@@ -329,7 +329,7 @@ unsigned char *base64_decode(const char *in, size_t *size)
 
         outlen = base64_decoded_size(*size);
 
-	DPRINTF("%s: Decoded size is %d bytes\n", __FUNCTION__, *size);
+	DPRINTF("%s: Decoded size is %ld bytes\n", __FUNCTION__, (unsigned long)*size);
 
         if((out = (unsigned char *)malloc(sizeof(unsigned char) * (outlen + 1))) == NULL)
                 return(NULL);
