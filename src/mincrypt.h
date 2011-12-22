@@ -11,6 +11,9 @@
 #ifndef MINCRYPT_H
 #define MINCRYPT_H
 
+// Comment following line to enable debugging
+#define DISABLE_DEBUG
+
 #define BUFFER_SIZE			(1 << 17)			/* Make 128 kB to be default buffer size */
 #define BUFFER_SIZE_BASE64		(((BUFFER_SIZE + 2) / 3) * 4)
 #define O_LARGEFILE			0x0200000

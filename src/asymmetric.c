@@ -8,12 +8,14 @@
  *
  */
 
+#include "mincrypt.h"
+
+#ifndef DISABLE_DEBUG
 #define DEBUG_ASYMMETRIC
+#endif
 
 // Asymmetrics should not be disabled except debugging purposes
-//#define DISABLE_ASYMMETRIC
-
-#include "mincrypt.h"
+// //#define DISABLE_ASYMMETRIC
 
 #ifdef DEBUG_ASYMMETRIC
 #define DPRINTF(fmt, args...) \

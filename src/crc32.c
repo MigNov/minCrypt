@@ -8,10 +8,13 @@
  *
  */
 
-//#define TEST_CRC
-#define DEBUG_CRC
-
 #include "mincrypt.h"
+
+//#define TEST_CRC
+
+#ifndef DISABLE_DEBUG
+#define DEBUG_CRC
+#endif
 
 #ifdef DEBUG_CRC
 #define DPRINTF(fmt, args...) \

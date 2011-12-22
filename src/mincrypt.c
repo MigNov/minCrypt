@@ -8,9 +8,11 @@
  *
  */
 
-#define DEBUG_MINCRYPT
-
 #include "mincrypt.h"
+
+#ifndef DISABLE_DEBUG
+#define DEBUG_MINCRYPT
+#endif
 
 #ifdef WINDOWS
 	#ifdef BUILDING_DLL

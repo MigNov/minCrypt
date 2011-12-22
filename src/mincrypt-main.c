@@ -8,9 +8,11 @@
  *
  */
 
-#define DEBUG_MINCRYPT_MAIN
-
 #include "mincrypt.h"
+
+#ifndef DISABLE_DEBUG
+#define DEBUG_MINCRYPT_MAIN
+#endif
 
 #ifdef DEBUG_MINCRYPT_MAIN
 #define DPRINTF(fmt, ...) \

@@ -32,7 +32,11 @@
  * @ingroup base64
  */
 
+#include "mincrypt.h"
+
+#ifndef DISABLE_DEBUG
 #define DEBUG_BASE64
+#endif
 
 #ifdef DEBUG_BASE64
 #define DPRINTF(fmt, ...) \
@@ -41,8 +45,6 @@ do { fprintf(stderr, "[mincrypt/base64      ] " fmt , ## __VA_ARGS__); } while (
 #define DPRINTF(fmt, ...) \
 do {} while(0)
 #endif
-
-#include "mincrypt.h"
 
 #define XX 100
 
