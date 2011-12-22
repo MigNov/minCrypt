@@ -7,7 +7,7 @@
 %endif
 
 Name:		mincrypt
-Version:	0.0.2
+Version:	0.0.4
 Release:	1%{?dist}%{?extra_release}
 Summary:	MinCrypt crypto-algorithm implementation
 Source:		http://www.migsoft.net/projects/mincrypt/mincrypt-%{version}.tar.gz

@@ -15,7 +15,7 @@ all:
 	cp -af libmincrypt.so ../examples
 
 install-exec-local:
-	cp -af libmincrypt.so $(libdir)/libmincrypt.so
+	cp -af libmincrypt.so $(DESTDIR)$(libdir)/libmincrypt.so
 
 uninstall-local:
-	rm -f $(libdir)/libmincrypt.so
+	rm -f $(DESTDIR)$(libdir)/libmincrypt.so

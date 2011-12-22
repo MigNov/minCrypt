@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS=-I m4
 SOURCEDIR=`rpm --eval '%{_sourcedir}'`
 
-SUBDIRS = src php tests windows docs examples tools
+#SUBDIRS = src php tests windows docs examples tools
+SUBDIRS = src php tests windows
 
 EXTRA_DIST = LICENSE html
 
