@@ -364,10 +364,15 @@ DLLEXPORT int mincrypt_generate_keys(int bits, char *salt, char *password, char 
 	int est_size = 0;
 	uint64_t testVal = 65;
 	uint64_t p = 0, q = 0;
+	int bytes = 2;
 
 	srand( time(NULL) / bits );
 
-	est_size = 4 * ((ITER_MAX * (bits / 8)) * 4);
+	#ifdef USE_64BIT_NYMBERS
+	bytes = 4;
+	#endif
+
+	est_size = bytes * ((ITER_MAX * (bits / 8)) * 4);
 
 	data_pub = (unsigned char *)malloc( est_size * sizeof(unsigned char) );
 	memset(data_pub, 0, bits);
@@ -957,7 +962,7 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 		DPRINTF("%s: No asymmetric block shift value set for decryption. Asymmetric approach not used\n", __FUNCTION__);
 
 	if (out_type == ENCODING_TYPE_BINARY) {
-		out = mincrypt_process(block+17+siglen, orig_size, 1, old_crc, id, &abShift);
+		out = mincrypt_process(block+17+siglen, orig_size, 1, old_crc, id, abShift);
 		if (out == NULL)
 			return NULL;
 
@@ -970,7 +975,7 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 		tmp = (unsigned char *)base64_decode( (const char *)block+17+siglen, &size);
 		tmp[ orig_size ] = 0;
 
-		out = mincrypt_process(tmp, orig_size, 1, old_crc, id, &abShift);
+		out = mincrypt_process(tmp, orig_size, 1, old_crc, id, abShift);
 		if (out == NULL)
 			return NULL;
 
