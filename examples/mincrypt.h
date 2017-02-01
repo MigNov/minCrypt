@@ -16,6 +16,8 @@ unsigned char *mincrypt_encrypt(unsigned char *block, size_t size, int id, size_
 unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int id, size_t *new_size, int *read_size);
 int mincrypt_encrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier);
 int mincrypt_decrypt_file(char *filename1, char *filename2, char *salt, char *password, int vector_multiplier);
+char *mincrypt_encrypt_minimal(char *input, unsigned char *key, unsigned char *salt);
+char *mincrypt_decrypt_minimal(char *input, unsigned char *key, unsigned char *salt);
 int mincrypt_generate_keys(int bits, char *salt, char *password, char *key_private, char *key_public);
 long mincrypt_get_version(void);
 int mincrypt_set_simple_mode(int enable);

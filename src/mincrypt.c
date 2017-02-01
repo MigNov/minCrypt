@@ -1014,6 +1014,135 @@ DLLEXPORT unsigned char *mincrypt_decrypt(unsigned char *block, size_t size, int
 }
 
 /*
+	Function name:		mincrypt_encrypt_minimal
+	Since version:		0.0.5
+	Description:		Function to encrypt using minimalistic algorithm
+	Arguments:		@input [string]: input set of characters
+				@key [string]: encryption key
+				@salt [string]: salt value to be used
+	Returns:		encrypted string or NULL on error
+*/
+DLLEXPORT char *mincrypt_encrypt_minimal(char *input, unsigned char *key, unsigned char *salt)
+{
+	int i, num, k;
+	long val, init = 0;
+	short shifted = 0;
+	char ret[4096] = { 0 };
+	char tmp[3] = { 0 };
+
+	for (i = 0; i < strlen(key); i++)
+		init += key[i] * salt[i % strlen(salt)];
+
+	memset(ret, 0, sizeof(ret));
+	for (i = 0; i < strlen(input); i++) {
+		shifted = 0;
+		val = ((init + key[i % strlen(key)] - salt[i % strlen(salt)]) % 256);
+
+		num = val - input[i];
+		if (num < 0) {
+			num = 256 + num;
+			shifted = 1;
+		}
+
+		snprintf(tmp, sizeof(tmp), "%02x", num);
+		if (shifted == 1) {
+			if (is_numeric(tmp[0]))
+				tmp[0] = 'G' + (tmp[0] - '0');
+			else
+				tmp[0] = charup(tmp[0]);
+
+			if (is_numeric(tmp[1]))
+				tmp[1] = 'G' + (tmp[1] - '0');
+			else
+				tmp[1] = charup(tmp[1]);
+		}
+
+		strcat(ret, tmp);
+	}
+
+	k = 0;
+	for (i = 0; i < strlen(input); i++)
+		k += input[i];
+
+	snprintf(tmp, sizeof(tmp), "%d", k % 10);
+	strcat(ret, tmp);
+
+	return strdup(ret);
+}
+
+/*
+	Function name:		mincrypt_decrypt_minimal
+	Since version:		0.0.5
+	Description:		Function to decrypt using minimalistic algorithm
+	Arguments:		@input [string]: input set of characters
+				@key [string]: encryption key
+				@salt [string]: salt value to be used
+	Returns:		decrypted string or NULL on error
+*/
+DLLEXPORT char *mincrypt_decrypt_minimal(char *input, unsigned char *key, unsigned char *salt)
+{
+	int i, num, j, k, cs, len;
+	long val, init = 0;
+	short shifted = 0;
+	char ret[4096] = { 0 };
+	char tmp[3] = { 0 };
+
+	for (i = 0; i < strlen(key); i++)
+		init += key[i] * salt[i % strlen(salt)];
+
+	cs = 0;
+	if (strlen(input) % 2 == 1) {
+		cs = input[strlen(input) - 1];
+		len = strlen(input) - 1;
+	}
+	else
+		len = strlen(input);
+
+	j = 0;
+	memset(ret, 0, sizeof(ret));
+	for (i = 0; i < len; i += 2) {
+		shifted = 0;
+
+		val = ((init + key[j % strlen(key)] - salt[j % strlen(salt)]) % 256);
+		snprintf(tmp, sizeof(tmp), "%c%c", input[i], input[i + 1]);
+		if (((tmp[0] >= 'G') && (tmp[0] <= 'P'))
+			|| ((tmp[0] >= 'A') && (tmp[0] <= 'Z'))) {
+			if ((tmp[0] >= 'G') && (tmp[0] <= 'P'))
+				tmp[0] = (tmp[0] - 'G') + 48;
+			shifted = 1;
+		}
+
+		if (((tmp[1] >= 'G') && (tmp[1] <= 'P'))
+			|| ((tmp[1] >= 'A') && (tmp[1] <= 'Z'))) {
+			if ((tmp[1] >= 'G') && (tmp[1] <= 'P'))
+				tmp[1] = (tmp[1] - 'G') + 48;
+			shifted = 1;
+		}
+
+		num = hexdec(tmp);
+		if (shifted == 1)
+			num = 256 + num;
+
+		tmp[0] = val - num;
+		tmp[1] = 0;
+
+		strcat(ret, tmp);
+		j++;
+	}
+
+	if (cs > 0) {
+		k = 0;
+		for (i = 0; i < strlen(ret); i++)
+			k += ret[i];
+
+		if ((k % 10) != (cs - '0'))
+			return NULL;
+	}
+
+	return strdup(ret);
+}
+
+/*
 	Function name:		mincrypt_encrypt_file
 	Since version:		0.0.1
 	Description:		Function for the entire file encryption. Takes the input and output files, salt, password and vector_multiplier value

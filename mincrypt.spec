@@ -43,7 +43,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %doc LICENSE README html
 %{_bindir}/mincrypt
-%{_libdir}/libmincrypt*
 %{php_extdir}/mincrypt-php.so
 %config(noreplace) %{php_confdir}/mincrypt-php.ini
 

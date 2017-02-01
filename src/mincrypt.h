@@ -148,5 +148,7 @@ unsigned int asymmetric_encrypt(unsigned int c, int e, int n);
 uint64_t asymmetric_encrypt_u64(uint64_t c, uint64_t e, uint64_t n);
 uint64_t asymmetric_decrypt_u64(uint64_t c, uint64_t d, uint64_t n);
 tPrimes get_prime_elements(uint64_t number);
+char *mincrypt_encrypt_minimal(char *input, unsigned char *key, unsigned char *salt);
+char *mincrypt_decrypt_minimal(char *input, unsigned char *key, unsigned char *salt);
 
 #endif

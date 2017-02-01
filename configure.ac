@@ -1,11 +1,8 @@
 AC_INIT([mincrypt], [0.0.4], [mignov@gmail.com])
-LT_INIT([shared])
-AC_ENABLE_SHARED
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall -Werror])
-AM_INIT_AUTOMAKE([-Wno-portability])
-#AM_MAINTAINER_MODE([enable])
-AC_PROG_CXX
+AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability])
+
+LT_INIT
 
 AC_PROG_CC
 AM_PROG_CC_C_O
